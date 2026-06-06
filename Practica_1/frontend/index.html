@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ruta Más Corta entre Ciudades</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Ruta Más Corta entre Ciudades</h1>
+
+    <section class="card">
+      <h2>Buscar ruta</h2>
+
+      <label>Origen</label>
+      <select id="origin"></select>
+
+      <label>Destino</label>
+      <select id="destination"></select>
+
+      <div class="actions">
+        <button onclick="searchShortest()">Ruta más corta</button>
+        <button onclick="searchAll()">Todas las rutas</button>
+        <button onclick="clearResults()">Limpiar</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Agregar ciudad</h2>
+      <input id="newCity" placeholder="Ejemplo: jalapa">
+      <button onclick="addCity()">Agregar ciudad</button>
+    </section>
+
+    <section class="card">
+      <h2>Agregar conexión</h2>
+      <input id="connectionOrigin" placeholder="Origen">
+      <input id="connectionDestination" placeholder="Destino">
+      <input id="connectionDistance" type="number" placeholder="Distancia">
+      <button onclick="addConnection()">Agregar conexión</button>
+    </section>
+
+    <section class="card">
+      <h2>Resultados</h2>
+      <div id="message"></div>
+      <div id="results"></div>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
