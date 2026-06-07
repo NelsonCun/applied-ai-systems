@@ -16,14 +16,8 @@ def list_cities():
 @router.post("/cities")
 def add_city(request: CityRequest):
     try:
-        ok = service.add_city(request.name)
-
-        if not ok:
-            raise HTTPException(status_code=400, detail="No se pudo agregar la ciudad.")
-
-        return {
-            "message": "Ciudad agregada correctamente."
-        }
+        result = service.add_city(request.name)
+        return result
 
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))
@@ -32,21 +26,12 @@ def add_city(request: CityRequest):
 @router.post("/connections")
 def add_connection(request: ConnectionRequest):
     try:
-        ok = service.add_connection(
+        result = service.add_connection(
             request.origin,
             request.destination,
             request.distance
         )
-
-        if not ok:
-            raise HTTPException(
-                status_code=400,
-                detail="No se pudo agregar la conexión. Puede que ya exista."
-            )
-
-        return {
-            "message": "Conexión agregada correctamente."
-        }
+        return result
 
     except ValueError as error:
         raise HTTPException(status_code=400, detail=str(error))

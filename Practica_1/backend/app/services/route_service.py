@@ -24,7 +24,4 @@ class RouteService:
         return self.repository.add_city(city)
 
     def add_connection(self, origin: str, destination: str, distance: int):
-        if distance <= 0:
-            raise ValueError("La distancia debe ser mayor a 0.")
-
         return self.repository.add_connection(origin, destination, distance)

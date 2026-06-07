@@ -1,51 +1,144 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Ruta Más Corta entre Ciudades</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Rutas Guatemala</title>
+
+  <link rel="stylesheet" href="./styles.css" />
 </head>
+
 <body>
-  <main class="container">
-    <h1>Ruta Más Corta entre Ciudades</h1>
+  <div class="app-shell">
+    <header class="hero">
+      <section class="hero-content">
+        <div class="hero-text">
+          <h2>Rutas Guatemala</h2>
 
-    <section class="card">
-      <h2>Buscar ruta</h2>
+          <p class="hero-description">
+            Consulta rutas, compara alternativas y administra ciudades o conexiones
+            entre distintos puntos de Guatemala.
+          </p>
+        </div>
 
-      <label>Origen</label>
-      <select id="origin"></select>
+        <div class="hero-map-card">
+          <img
+            src="./assets/mapa-guatemala.png"
+            alt="Mapa de Guatemala"
+            class="hero-map"
+          />
+        </div>
+      </section>
+    </header>
 
-      <label>Destino</label>
-      <select id="destination"></select>
+    <main class="main-layout">
+      <section class="card search-card">
+        <div class="card-header">
+          <div>
+            <p class="section-kicker">Consulta principal</p>
+            <h3>Buscar rutas</h3>
+          </div>
+        </div>
 
-      <div class="actions">
-        <button onclick="searchShortest()">Ruta más corta</button>
-        <button onclick="searchAll()">Todas las rutas</button>
-        <button onclick="clearResults()">Limpiar</button>
-      </div>
-    </section>
+        <div class="form-grid two-columns">
+          <div class="form-field">
+            <label for="origin">Ciudad origen</label>
+            <select id="origin"></select>
+          </div>
 
-    <section class="card">
-      <h2>Agregar ciudad</h2>
-      <input id="newCity" placeholder="Ejemplo: jalapa">
-      <button onclick="addCity()">Agregar ciudad</button>
-    </section>
+          <div class="form-field">
+            <label for="destination">Ciudad destino</label>
+            <select id="destination"></select>
+          </div>
+        </div>
 
-    <section class="card">
-      <h2>Agregar conexión</h2>
-      <input id="connectionOrigin" placeholder="Origen">
-      <input id="connectionDestination" placeholder="Destino">
-      <input id="connectionDistance" type="number" placeholder="Distancia">
-      <button onclick="addConnection()">Agregar conexión</button>
-    </section>
+        <div class="button-row">
+          <button class="btn btn-primary" onclick="searchShortest()">
+            Ruta más corta
+          </button>
 
-    <section class="card">
-      <h2>Resultados</h2>
-      <div id="message"></div>
-      <div id="results"></div>
-    </section>
-  </main>
+          <button class="btn btn-secondary" onclick="searchAll()">
+            Todas las rutas
+          </button>
 
-  <script src="app.js"></script>
+          <button class="btn btn-light" onclick="clearResults()">
+            Limpiar
+          </button>
+        </div>
+      </section>
+
+      <aside class="side-column">
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <p class="section-kicker">Administración</p>
+              <h3>Agregar ciudad</h3>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="newCity">Nombre de ciudad</label>
+            <input
+              id="newCity"
+              type="text"
+              placeholder="Ejemplo: jalapa"
+            />
+          </div>
+
+          <button class="btn btn-primary btn-full" onclick="addCity()">
+            Agregar ciudad
+          </button>
+        </section>
+
+        <section class="card">
+          <div class="card-header">
+            <div>
+              <p class="section-kicker">Red vial</p>
+              <h3>Agregar conexión</h3>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="connectionOrigin">Origen</label>
+            <select id="connectionOrigin"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="connectionDestination">Destino</label>
+            <select id="connectionDestination"></select>
+          </div>
+
+          <div class="form-field">
+            <label for="connectionDistance">Distancia en kilómetros</label>
+            <input
+              id="connectionDistance"
+              type="number"
+              min="1"
+              placeholder="Ejemplo: 95"
+            />
+          </div>
+
+          <button class="btn btn-primary btn-full" onclick="addConnection()">
+            Agregar conexión
+          </button>
+        </section>
+      </aside>
+
+      <section class="card results-card">
+        <div class="card-header">
+          <div>
+            <p class="section-kicker">Resultados</p>
+            <h3>Rutas encontradas</h3>
+          </div>
+        </div>
+
+        <div id="message"></div>
+        <div id="results" class="results-grid"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
 </body>
 </html>
