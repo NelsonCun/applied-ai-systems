@@ -525,6 +525,16 @@ http://127.0.0.1:5500
 
 ![Archivo Prolog datos de usuario](./evidencias/archivo_prolog_datos_usuario.png)
 
+
+---
+
+## 19. Posibles mejoras futuras
+* Implementar autenticación de usuarios para administrar rutas y conexiones.
+* Agregar funcionalidad para eliminar ciudades y conexiones.
+* Permitir actualizar la distancia de una conexión existente.
+* Implementar un sistema de puntuación para las rutas, considerando factores como tráfico o condiciones de las carreteras.
+* Integrar un mapa interactivo para visualizar las rutas geográficamente.
+
 ---
 
 ## 20. Conclusiones
