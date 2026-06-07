@@ -5,5 +5,8 @@
 % Este archivo puede ser sobrescrito automáticamente.
 
 ciudad(chimaltenango).
+ciudad(cuilapa).
+ciudad(jalapa).
 
 conexion(antigua, chimaltenango, 20).
+conexion(guatemala, jalapa, 167).
