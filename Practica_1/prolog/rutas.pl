@@ -1,6 +1,9 @@
 :- dynamic ciudad/1.
 :- dynamic conexion/3.
 
+:- multifile ciudad/1.
+:- multifile conexion/3.
+
 % Base de conocimiento
 
 ciudad(guatemala).

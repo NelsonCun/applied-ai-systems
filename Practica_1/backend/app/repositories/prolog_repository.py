@@ -1,5 +1,7 @@
 import re
 from pathlib import Path
+import re
+import unicodedata
 from pyswip import Prolog
 
 
@@ -28,17 +30,45 @@ class PrologRepository:
             self.user_data_file.write_text(
                 ":- dynamic ciudad/1.\n"
                 ":- dynamic conexion/3.\n\n"
-                "% Datos agregados desde la aplicación.\n",
+                ":- multifile ciudad/1.\n"
+                ":- multifile conexion/3.\n\n"
+                "% Datos agregados desde la aplicación.\n"
+                "% Este archivo puede ser sobrescrito automáticamente.\n",
                 encoding="utf-8"
             )
 
     def _normalize_atom(self, value: str) -> str:
-        atom = value.strip().lower().replace(" ", "_")
+        if value is None:
+            raise ValueError("El nombre no puede estar vacío.")
 
-        if not re.fullmatch(r"[a-z][a-z0-9_]*", atom):
-            raise ValueError("Nombre inválido. Use letras, números o guion bajo.")
+        text = value.strip().lower()
 
-        return atom
+        if not text:
+            raise ValueError("El nombre no puede estar vacío.")
+
+        # Quita tildes: San José -> san jose
+        text = unicodedata.normalize("NFD", text)
+        text = "".join(char for char in text if unicodedata.category(char) != "Mn")
+
+        # Convierte espacios, guiones y separadores en guion bajo
+        text = re.sub(r"[\s\-]+", "_", text)
+
+        # Elimina caracteres no válidos para átomos Prolog simples
+        text = re.sub(r"[^a-z0-9_]", "", text)
+
+        # Evita varios guiones bajos seguidos
+        text = re.sub(r"_+", "_", text).strip("_")
+
+        if not text:
+            raise ValueError("Nombre de ciudad inválido.")
+
+        # Prolog necesita que el átomo simple no inicie con número
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", text):
+            raise ValueError(
+                "Nombre de ciudad inválido. Debe iniciar con una letra."
+            )
+
+        return text
 
     def _city_exists(self, city: str) -> bool:
         query = f"ciudad({city})"
@@ -75,6 +105,9 @@ class PrologRepository:
         lines = [
             ":- dynamic ciudad/1.",
             ":- dynamic conexion/3.",
+            "",
+            ":- multifile ciudad/1.",
+            ":- multifile conexion/3.",
             "",
             "% Datos agregados desde la aplicación.",
             "% Este archivo puede ser sobrescrito automáticamente.",
