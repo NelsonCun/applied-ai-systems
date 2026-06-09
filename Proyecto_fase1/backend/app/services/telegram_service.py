@@ -1,9 +1,12 @@
 import os
+from pathlib import Path
+
 import requests
 from dotenv import load_dotenv
 
 
-load_dotenv()
+ENV_FILE = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=ENV_FILE)
 
 
 def enviar_diagnostico_telegram(
@@ -24,7 +27,7 @@ def enviar_diagnostico_telegram(
     sintomas_texto = "\n".join([f"- {s}" for s in sintomas])
 
     mensaje = f"""
-🧠 Doctor Byte - Diagnóstico realizado
+Doctor Byte - Diagnóstico realizado
 
 Síntomas seleccionados:
 {sintomas_texto}
@@ -41,13 +44,17 @@ Recomendación:
 
     url = f"https://api.telegram.org/bot{token}/sendMessage"
 
-    response = requests.post(
-        url,
-        json={
-            "chat_id": chat_id_final,
-            "text": mensaje
-        },
-        timeout=10
-    )
+    try:
+        response = requests.post(
+            url,
+            json={
+                "chat_id": chat_id_final,
+                "text": mensaje
+            },
+            timeout=10
+        )
 
-    return response.status_code == 200
+        return response.status_code == 200
+
+    except requests.RequestException:
+        return False

@@ -7,6 +7,7 @@
 % Datos agregados desde la aplicación.
 % Este archivo puede ser sobrescrito automáticamente.
 
+ciudad(calificacion1).
 ciudad(chimaltenango).
 ciudad(cuilapa).
 ciudad(jalapa).
@@ -14,5 +15,6 @@ ciudad(san_lucas).
 ciudad(san_marcos).
 
 conexion(antigua, chimaltenango, 20).
+conexion(calificacion1, jalapa, 73).
 conexion(guatemala, jalapa, 167).
 conexion(quetzaltenango, san_marcos, 45).
