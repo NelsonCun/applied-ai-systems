@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import diagnostico_routes, historial_routes
+from app.routes import (
+    admin_routes,
+    diagnostico_routes,
+    historial_routes,
+)
 
 
 app = FastAPI(
@@ -21,6 +25,7 @@ app.add_middleware(
 
 app.include_router(diagnostico_routes.router)
 app.include_router(historial_routes.router)
+app.include_router(admin_routes.router)
 
 
 @app.get("/")
