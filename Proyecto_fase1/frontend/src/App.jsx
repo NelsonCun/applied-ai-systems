@@ -153,7 +153,10 @@ function App() {
     const grupos = {};
 
     sintomas.forEach((sintoma) => {
-      const grupo = SINTOMA_GRUPO[sintoma.id] || "Otros";
+      const grupo =
+        sintoma.categoria ||
+        SINTOMA_GRUPO[sintoma.id] ||
+        "Otros";
 
       if (!grupos[grupo]) {
         grupos[grupo] = [];
@@ -165,7 +168,7 @@ function App() {
     return Object.entries(grupos).map(([grupo, items]) => ({
       grupo,
       sintomas: items,
-      ...GRUPOS_META[grupo],
+      ...(GRUPOS_META[grupo] || GRUPOS_META.Otros),
     }));
   }, [sintomas]);
 
@@ -203,22 +206,76 @@ function App() {
 
   async function manejarDiagnostico() {
     if (sintomasSeleccionados.length === 0) {
-      setError("Seleccione al menos un síntoma para iniciar el diagnóstico.");
+      setError(
+        "Seleccione al menos un síntoma para iniciar el diagnóstico."
+      );
       return;
     }
 
-    try {
-      setCargando(true);
-      setError("");
-      setResultado(null);
+    setCargando(true);
+    setError("");
+    setResultado(null);
 
-      const data = await diagnosticarSintomas(sintomasSeleccionados);
+    try {
+      const data = await diagnosticarSintomas(
+        sintomasSeleccionados
+      );
+
+      // El diagnóstico ya fue generado correctamente.
       setResultado(data);
 
-      const historialData = await obtenerHistorial();
-      setHistorial([...historialData].reverse());
-    } catch {
-      setError("Ocurrió un error al realizar el diagnóstico.");
+      try {
+        const historialData =
+          await obtenerHistorial();
+
+        setHistorial(
+          [...historialData].reverse()
+        );
+      } catch (historialError) {
+        console.error(
+          "No se pudo actualizar el historial:",
+          historialError
+        );
+
+        setError(
+          "El diagnóstico fue generado, pero no se pudo actualizar la vista del historial."
+        );
+      }
+    } catch (diagnosticoError) {
+      console.error(
+        "Error al solicitar diagnóstico:",
+        diagnosticoError
+      );
+
+      if (
+        diagnosticoError.code ===
+        "ECONNABORTED"
+      ) {
+        setError(
+          "El diagnóstico está tardando más de lo esperado. Verifique el estado del backend."
+        );
+      } else if (
+        diagnosticoError.response?.data?.detail
+      ) {
+        const detalle =
+          diagnosticoError.response.data.detail;
+
+        setError(
+          typeof detalle === "string"
+            ? detalle
+            : "Los datos enviados no son válidos."
+        );
+      } else if (
+        diagnosticoError.request
+      ) {
+        setError(
+          "No se recibió respuesta del servidor. Verifique que el backend esté ejecutándose."
+        );
+      } else {
+        setError(
+          "No fue posible realizar el diagnóstico."
+        );
+      }
     } finally {
       setCargando(false);
     }

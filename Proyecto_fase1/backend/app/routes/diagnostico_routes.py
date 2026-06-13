@@ -1,23 +1,81 @@
-from fastapi import APIRouter
-from app.models.schemas import DiagnosticoRequest
-from app.services.prolog_service import diagnosticar_con_prolog, obtener_sintomas_disponibles
-from app.services.telegram_service import enviar_diagnostico_telegram
-from app.services.historial_service import guardar_diagnostico
+import logging
+
+from fastapi import APIRouter, HTTPException, status
+
+from app.models.schemas import (
+    DiagnosticoRequest,
+    DiagnosticoResponse
+)
+
+from app.services.historial_service import (
+    guardar_diagnostico
+)
+
+from app.services.prolog_service import (
+    ConocimientoValidationError,
+    PrologServiceError,
+    diagnosticar_con_prolog,
+    obtener_sintomas_disponibles
+)
+
+from app.services.telegram_service import (
+    enviar_diagnostico_telegram
+)
 
 
-router = APIRouter(prefix="/api", tags=["Diagnóstico"])
+logger = logging.getLogger(__name__)
+
+router = APIRouter(
+    prefix="/api",
+    tags=["Diagnóstico"]
+)
 
 
 @router.get("/sintomas")
 def listar_sintomas():
-    return {
-        "sintomas": obtener_sintomas_disponibles()
-    }
+    try:
+        return {
+            "sintomas": obtener_sintomas_disponibles()
+        }
+
+    except PrologServiceError as exc:
+        logger.exception(
+            "No fue posible obtener los síntomas desde Prolog."
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="El motor de diagnóstico no está disponible."
+        ) from exc
 
 
-@router.post("/diagnosticar")
-def diagnosticar(request: DiagnosticoRequest):
-    resultado = diagnosticar_con_prolog(request.sintomas)
+@router.post(
+    "/diagnosticar",
+    response_model=DiagnosticoResponse
+)
+def diagnosticar(
+    request: DiagnosticoRequest
+):
+    try:
+        resultado = diagnosticar_con_prolog(
+            request.sintomas
+        )
+
+    except ConocimientoValidationError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(exc)
+        ) from exc
+
+    except PrologServiceError as exc:
+        logger.exception(
+            "Error al ejecutar el diagnóstico en Prolog."
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="El motor de diagnóstico no está disponible."
+        ) from exc
 
     telegram_enviado = enviar_diagnostico_telegram(
         sintomas=request.sintomas,
@@ -36,6 +94,19 @@ def diagnosticar(request: DiagnosticoRequest):
         "telegram_enviado": telegram_enviado
     }
 
-    guardar_diagnostico(respuesta)
+    try:
+        guardar_diagnostico(
+            respuesta
+        )
+
+    except (OSError, ValueError) as exc:
+        logger.exception(
+            "No fue posible guardar el diagnóstico."
+        )
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="El diagnóstico fue generado, pero no pudo guardarse."
+        ) from exc
 
     return respuesta
