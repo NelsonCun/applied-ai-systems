@@ -14,6 +14,14 @@ from app.models.admin_schemas import (
     SintomaUpdate,
 )
 
+from app.models.config_schemas import TelegramConfigUpdate
+
+from app.services.configuracion_service import (
+    ConfiguracionError,
+    actualizar_configuracion_telegram,
+    obtener_configuracion_telegram,
+)
+
 from app.services.conocimiento_service import (
     ConflictoConocimientoError,
     PersistenciaConocimientoError,
@@ -71,6 +79,12 @@ def ejecutar_operacion(
         ) from exc
 
     except PersistenciaConocimientoError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
+
+    except ConfiguracionError as exc:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=str(exc),
@@ -247,3 +261,16 @@ def borrar_regla(identificador: str):
     return {
         "mensaje": "Regla eliminada correctamente."
     }
+
+
+@router.get("/configuracion/telegram")
+def consultar_configuracion_telegram():
+    return ejecutar_operacion(obtener_configuracion_telegram)
+
+
+@router.put("/configuracion/telegram")
+def modificar_configuracion_telegram(datos: TelegramConfigUpdate):
+    return ejecutar_operacion(
+        actualizar_configuracion_telegram,
+        datos.model_dump(),
+    )
