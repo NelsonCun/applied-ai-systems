@@ -29,3 +29,11 @@ dist-ssr
 .env.test.local
 .env.production.local
 .vite/
+
+# Variables locales de Vite
+.env
+.env.local
+.env.*.local
+
+# Caché generada por Vite
+.vite/
