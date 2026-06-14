@@ -21,7 +21,7 @@ from app.schemas.query import (
 )
 
 
-FUZZY_MATCH_THRESHOLD = 0.74
+FUZZY_MATCH_THRESHOLD = 0.68
 
 
 class QueryService:
