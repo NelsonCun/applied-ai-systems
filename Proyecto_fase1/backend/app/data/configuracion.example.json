@@ -1,0 +1,9 @@
+{
+  "telegram": {
+    "activo": true,
+    "chat_id": "",
+    "mensaje_bienvenida": "Bienvenido a Doctor Byte.",
+    "encabezado_diagnostico": "Doctor Byte - Diagnóstico realizado",
+    "mensaje_despedida": "Este diagnóstico es preliminar. Si el problema continúa, consulte a un técnico especializado."
+  }
+}
