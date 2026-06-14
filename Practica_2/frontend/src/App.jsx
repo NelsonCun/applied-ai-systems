@@ -1,85 +1,195 @@
 import { useEffect, useState } from "react";
 
-const API_URL =
-  import.meta.env.VITE_API_URL ??
-  "http://localhost:8000/api/v1";
+import { apiRequest } from "./api/client";
+import Layout from "./components/Layout";
+import CategoriesPage from "./pages/CategoriesPage";
+import DashboardPage from "./pages/DashboardPage";
+import HistoryPage from "./pages/HistoryPage";
+import LoginPage from "./pages/LoginPage";
+import QuestionsPage from "./pages/QuestionsPage";
+import SettingsPage from "./pages/SettingsPage";
+
+
+const TOKEN_KEY = "smartbot_admin_token";
+
 
 function App() {
-  const [apiStatus, setApiStatus] = useState("Verificando");
-  const [databaseStatus, setDatabaseStatus] = useState("Verificando");
-  const [error, setError] = useState("");
+  const [token, setToken] = useState(
+    () =>
+      window.localStorage.getItem(
+        TOKEN_KEY
+      ) ?? ""
+  );
+
+  const [currentUser, setCurrentUser] =
+    useState(null);
+
+  const [checkingSession, setCheckingSession] =
+    useState(Boolean(token));
+
+  const [activeView, setActiveView] =
+    useState("dashboard");
+
+  const [toast, setToast] =
+    useState(null);
+
+  const notify = (
+    message,
+    type = "success"
+  ) => {
+    setToast({
+      message,
+      type,
+    });
+
+    window.setTimeout(() => {
+      setToast(null);
+    }, 4200);
+  };
+
+  const logout = () => {
+    window.localStorage.removeItem(
+      TOKEN_KEY
+    );
+
+    setToken("");
+    setCurrentUser(null);
+    setActiveView("dashboard");
+  };
 
   useEffect(() => {
-    const verifyServices = async () => {
+    if (!token) {
+      setCheckingSession(false);
+      return;
+    }
+
+    let mounted = true;
+
+    const verifySession = async () => {
+      setCheckingSession(true);
+
       try {
-        const response = await fetch(`${API_URL}/health`);
-
-        if (!response.ok) {
-          throw new Error(`La API respondió con estado ${response.status}`);
-        }
-
-        const data = await response.json();
-
-        setApiStatus(data.status === "ok" ? "Disponible" : "No disponible");
-        setDatabaseStatus(
-          data.database === "connected"
-            ? "Conectada"
-            : "Sin conexión"
+        const user = await apiRequest(
+          "/auth/me",
+          { token }
         );
-      } catch (requestError) {
-        setApiStatus("No disponible");
-        setDatabaseStatus("No verificada");
-        setError(requestError.message);
+
+        if (mounted) {
+          setCurrentUser(user);
+        }
+      } catch {
+        if (mounted) {
+          logout();
+        }
+      } finally {
+        if (mounted) {
+          setCheckingSession(false);
+        }
       }
     };
 
-    verifyServices();
-  }, []);
+    verifySession();
+
+    return () => {
+      mounted = false;
+    };
+  }, [token]);
+
+  const handleLogin = (data) => {
+    window.localStorage.setItem(
+      TOKEN_KEY,
+      data.access_token
+    );
+
+    setToken(data.access_token);
+    setCurrentUser(data.user);
+
+    notify(
+      `Bienvenido, ${data.user.full_name}.`
+    );
+  };
+
+  if (checkingSession) {
+    return (
+      <main className="session-loading">
+        <div className="brand-symbol brand-symbol-large">
+          SB
+        </div>
+
+        <span className="spinner" />
+
+        <p>Validando sesión...</p>
+      </main>
+    );
+  }
+
+  if (!token) {
+    return (
+      <LoginPage onLogin={handleLogin} />
+    );
+  }
+
+  const renderPage = () => {
+    switch (activeView) {
+      case "categories":
+        return (
+          <CategoriesPage
+            token={token}
+            notify={notify}
+          />
+        );
+
+      case "questions":
+        return (
+          <QuestionsPage
+            token={token}
+            notify={notify}
+          />
+        );
+
+      case "history":
+        return (
+          <HistoryPage token={token} />
+        );
+
+      case "settings":
+        return (
+          <SettingsPage
+            token={token}
+            notify={notify}
+          />
+        );
+
+      case "dashboard":
+      default:
+        return (
+          <DashboardPage token={token} />
+        );
+    }
+  };
 
   return (
-    <main className="page">
-      <section className="hero">
-        <div className="brand">
-          <div className="brand-mark">SB</div>
+    <>
+      <Layout
+        activeView={activeView}
+        onChangeView={setActiveView}
+        currentUser={currentUser}
+        onLogout={logout}
+      >
+        {renderPage()}
+      </Layout>
 
-          <div>
-            <p className="eyebrow">Sistema de atención automatizada</p>
-            <h1>SmartBot Hospital</h1>
-          </div>
+      {toast && (
+        <div
+          className={`toast toast-${toast.type}`}
+          role="status"
+        >
+          {toast.message}
         </div>
-
-        <p className="description">
-          Plataforma administrativa para gestionar preguntas frecuentes,
-          respuestas, categorías y consultas recibidas desde Telegram.
-        </p>
-      </section>
-
-      <section className="status-panel">
-        <header>
-          <p className="eyebrow">Diagnóstico inicial</p>
-          <h2>Estado de los servicios</h2>
-        </header>
-
-        <div className="status-grid">
-          <article className="status-card">
-            <span>API REST</span>
-            <strong>{apiStatus}</strong>
-          </article>
-
-          <article className="status-card">
-            <span>PostgreSQL</span>
-            <strong>{databaseStatus}</strong>
-          </article>
-        </div>
-
-        {error && (
-          <p className="error-message">
-            Detalle: {error}
-          </p>
-        )}
-      </section>
-    </main>
+      )}
+    </>
   );
 }
+
 
 export default App;
