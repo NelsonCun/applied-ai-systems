@@ -8,8 +8,8 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     FetchedValue,
+    ForeignKey,
     Identity,
-    String,
     Text,
     func,
     text,
@@ -23,8 +23,8 @@ if TYPE_CHECKING:
     from app.models.question import Question
 
 
-class Category(Base):
-    __tablename__ = "categories"
+class Answer(Base):
+    __tablename__ = "answers"
 
     id: Mapped[int] = mapped_column(
         BigInteger,
@@ -32,16 +32,21 @@ class Category(Base):
         primary_key=True,
     )
 
-    name: Mapped[str] = mapped_column(
-        String(100),
+    question_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "questions.id",
+            onupdate="CASCADE",
+            ondelete="CASCADE",
+        ),
         unique=True,
         nullable=False,
         index=True,
     )
 
-    description: Mapped[str | None] = mapped_column(
+    answer_text: Mapped[str] = mapped_column(
         Text,
-        nullable=True,
+        nullable=False,
     )
 
     is_active: Mapped[bool] = mapped_column(
@@ -63,7 +68,6 @@ class Category(Base):
         server_onupdate=FetchedValue(),
     )
 
-    questions: Mapped[list["Question"]] = relationship(
-        back_populates="category",
-        passive_deletes=True,
+    question: Mapped["Question"] = relationship(
+        back_populates="answer",
     )

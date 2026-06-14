@@ -8,6 +8,7 @@ from sqlalchemy import (
     Boolean,
     DateTime,
     FetchedValue,
+    ForeignKey,
     Identity,
     String,
     Text,
@@ -20,11 +21,12 @@ from app.db.base import Base
 
 
 if TYPE_CHECKING:
-    from app.models.question import Question
+    from app.models.answer import Answer
+    from app.models.category import Category
 
 
-class Category(Base):
-    __tablename__ = "categories"
+class Question(Base):
+    __tablename__ = "questions"
 
     id: Mapped[int] = mapped_column(
         BigInteger,
@@ -32,16 +34,27 @@ class Category(Base):
         primary_key=True,
     )
 
-    name: Mapped[str] = mapped_column(
-        String(100),
-        unique=True,
+    category_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey(
+            "categories.id",
+            onupdate="CASCADE",
+            ondelete="RESTRICT",
+        ),
         nullable=False,
         index=True,
     )
 
-    description: Mapped[str | None] = mapped_column(
+    question_text: Mapped[str] = mapped_column(
         Text,
-        nullable=True,
+        nullable=False,
+    )
+
+    normalized_text: Mapped[str] = mapped_column(
+        String(500),
+        unique=True,
+        nullable=False,
+        index=True,
     )
 
     is_active: Mapped[bool] = mapped_column(
@@ -63,7 +76,13 @@ class Category(Base):
         server_onupdate=FetchedValue(),
     )
 
-    questions: Mapped[list["Question"]] = relationship(
-        back_populates="category",
+    category: Mapped["Category"] = relationship(
+        back_populates="questions",
+    )
+
+    answer: Mapped["Answer | None"] = relationship(
+        back_populates="question",
+        cascade="all, delete-orphan",
         passive_deletes=True,
+        uselist=False,
     )

@@ -1,47 +1,52 @@
-from __future__ import annotations
-
 from datetime import datetime
-from typing import TYPE_CHECKING
 
 from sqlalchemy import (
-    BigInteger,
     Boolean,
     DateTime,
     FetchedValue,
-    Identity,
+    SmallInteger,
     String,
     Text,
     func,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
 
 
-if TYPE_CHECKING:
-    from app.models.question import Question
-
-
-class Category(Base):
-    __tablename__ = "categories"
+class BotSetting(Base):
+    __tablename__ = "bot_settings"
 
     id: Mapped[int] = mapped_column(
-        BigInteger,
-        Identity(),
+        SmallInteger,
         primary_key=True,
+        server_default=text("1"),
     )
 
-    name: Mapped[str] = mapped_column(
-        String(100),
-        unique=True,
+    hospital_name: Mapped[str] = mapped_column(
+        String(150),
         nullable=False,
-        index=True,
     )
 
-    description: Mapped[str | None] = mapped_column(
-        Text,
+    telegram_chat_id: Mapped[str | None] = mapped_column(
+        String(100),
         nullable=True,
+    )
+
+    bot_username: Mapped[str | None] = mapped_column(
+        String(100),
+        nullable=True,
+    )
+
+    welcome_message: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+    )
+
+    unknown_question_message: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
     )
 
     is_active: Mapped[bool] = mapped_column(
@@ -61,9 +66,4 @@ class Category(Base):
         nullable=False,
         server_default=func.now(),
         server_onupdate=FetchedValue(),
-    )
-
-    questions: Mapped[list["Question"]] = relationship(
-        back_populates="category",
-        passive_deletes=True,
     )
