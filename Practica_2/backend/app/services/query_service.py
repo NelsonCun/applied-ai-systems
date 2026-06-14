@@ -75,6 +75,15 @@ class QueryService:
                 ),
             )
 
+        if not settings.is_active:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail=(
+                    "El servicio de consultas está "
+                    "temporalmente desactivado."
+                ),
+            )
+
         normalized_query = normalize_text(data.query)
 
         question, confidence = QueryService.find_best_match(

@@ -16,6 +16,9 @@ class Settings(BaseSettings):
 
     cors_origins: str = "http://localhost:5173"
 
+    telegram_bot_token: str = ""
+    telegram_api_base_url: str = "https://api.telegram.org"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         case_sensitive=False,

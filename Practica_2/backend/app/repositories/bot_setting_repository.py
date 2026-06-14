@@ -14,3 +14,17 @@ class BotSettingRepository:
         )
 
         return database.scalar(statement)
+
+    @staticmethod
+    def update(
+        database: Session,
+        bot_settings: BotSetting,
+        changes: dict,
+    ) -> BotSetting:
+        for field, value in changes.items():
+            setattr(bot_settings, field, value)
+
+        database.commit()
+        database.refresh(bot_settings)
+
+        return bot_settings

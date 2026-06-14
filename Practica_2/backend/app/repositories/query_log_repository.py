@@ -1,3 +1,4 @@
+from sqlalchemy import func, or_, select
 from sqlalchemy.orm import Session
 
 from app.models import QueryLog
@@ -37,3 +38,66 @@ class QueryLogRepository:
         database.refresh(query_log)
 
         return query_log
+
+    @staticmethod
+    def list_paginated(
+        database: Session,
+        *,
+        page: int,
+        page_size: int,
+        search: str | None,
+        was_answered: bool | None,
+    ) -> tuple[list[QueryLog], int]:
+        filters = []
+
+        if search:
+            pattern = f"%{search.strip()}%"
+
+            filters.append(
+                or_(
+                    QueryLog.original_query.ilike(pattern),
+                    QueryLog.normalized_query.ilike(pattern),
+                    func.coalesce(
+                        QueryLog.telegram_username,
+                        "",
+                    ).ilike(pattern),
+                    func.coalesce(
+                        QueryLog.telegram_first_name,
+                        "",
+                    ).ilike(pattern),
+                )
+            )
+
+        if was_answered is not None:
+            filters.append(
+                QueryLog.was_answered.is_(was_answered)
+            )
+
+        count_statement = select(
+            func.count(QueryLog.id)
+        ).where(*filters)
+
+        total = int(
+            database.scalar(count_statement) or 0
+        )
+
+        statement = (
+            select(QueryLog)
+            .where(*filters)
+            .order_by(QueryLog.created_at.desc())
+            .offset((page - 1) * page_size)
+            .limit(page_size)
+        )
+
+        items = list(
+            database.scalars(statement).all()
+        )
+
+        return items, total
+
+    @staticmethod
+    def get_by_id(
+        database: Session,
+        query_log_id: int,
+    ) -> QueryLog | None:
+        return database.get(QueryLog, query_log_id)
