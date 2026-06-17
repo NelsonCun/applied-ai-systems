@@ -10,10 +10,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import InvoicesPage from "./pages/InvoicesPage";
 import LoginPage from "./pages/LoginPage";
-import PlaceholderPage from "./pages/PlaceholderPage";
 import ProvidersPage from "./pages/ProvidersPage";
 import ReportsPage from "./pages/ReportsPage";
 import AutomationsPage from "./pages/AutomationsPage";
+import EmailsPage from "./pages/EmailsPage";
 
 
 function ProtectedLayout() {
@@ -62,15 +62,7 @@ export default function App() {
 
         <Route
           path="/emails"
-          element={
-            <PlaceholderPage
-              title="Correos"
-              description={
-                "Historial de entrega de " +
-                "reportes por correo."
-              }
-            />
-          }
+          element={<EmailsPage />}
         />
       </Route>
 
