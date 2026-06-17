@@ -5,8 +5,8 @@ pydantic-settings
 python-multipart
 redis
 celery
-passlib[bcrypt]
-python-jose[cryptography]
+bcrypt
+PyJWT
 email-validator
 httpx
 pytest

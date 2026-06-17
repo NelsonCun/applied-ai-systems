@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     api_v1_prefix: str = "/api/v1"
 
     secret_key: str = "change-this-secret-key"
+    jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 480
 
     database_url: str = (
@@ -20,7 +21,10 @@ class Settings(BaseSettings):
     celery_broker_url: str = "redis://redis:6379/0"
     celery_result_backend: str = "redis://redis:6379/1"
 
-    cors_origins: str = "http://localhost:5173,http://localhost:8080"
+    cors_origins: str = (
+        "http://localhost:5174,"
+        "http://localhost:8080"
+    )
 
     model_config = SettingsConfigDict(
         env_file=".env",

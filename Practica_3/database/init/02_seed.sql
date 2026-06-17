@@ -24,7 +24,7 @@ INSERT INTO users (
 SELECT
     'Administrador SmartInvoice',
     'admin',
-    'admin@smartinvoice.local',
+    'admin@smartinvoice.com',
     crypt('Admin123*', gen_salt('bf', 12)),
     'ADMIN',
     TRUE
@@ -32,7 +32,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM users
     WHERE username = 'admin'
-       OR email = 'admin@smartinvoice.local'
+       OR email = 'admin@smartinvoice.com'
 );
 
 INSERT INTO providers (

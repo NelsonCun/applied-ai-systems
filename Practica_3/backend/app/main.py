@@ -5,6 +5,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from redis import Redis
 
+from app.api.v1.router import api_router
 from app.core.config import settings
 from app.db.connection import close_pool, open_pool, pool
 
@@ -31,6 +32,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+
+
+app.include_router(
+    api_router,
+    prefix=settings.api_v1_prefix,
+)
 
 @app.get("/")
 def root() -> dict:
