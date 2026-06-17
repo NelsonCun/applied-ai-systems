@@ -19,3 +19,4 @@ Pillow
 python-dateutil
 rapidfuzz
 reportlab
+openpyxl

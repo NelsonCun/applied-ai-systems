@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     max_upload_size_mb: int = 15
 
     processed_dir: str = "/app/storage/processed"
+    reports_dir: str = "/app/storage/reports"
     tesseract_language: str = "spa+eng"
     ocr_min_confidence: float = 60
     ocr_dpi: int = 300

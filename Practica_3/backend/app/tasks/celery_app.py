@@ -10,6 +10,7 @@ celery_app = Celery(
     include=[
         "app.tasks.health_tasks",
         "app.tasks.invoice_tasks",
+        "app.tasks.report_tasks",
     ],
 )
 
