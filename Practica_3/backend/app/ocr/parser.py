@@ -162,7 +162,8 @@ def extract_nit(
 ) -> str | None:
     match = re.search(
         r"\bNIT\s*[:#-]?\s*"
-        r"(CF|C/F|[0-9]{1,9}-?[0-9Kk]?)\b",
+        r"(CF|C/F|"
+        r"[0-9]{1,9}(?:\s*-\s*[0-9Kk])?)\b",
         text,
         re.IGNORECASE,
     )
@@ -170,8 +171,14 @@ def extract_nit(
     if not match:
         return None
 
+    raw_nit = re.sub(
+        r"\s+",
+        "",
+        match.group(1),
+    )
+
     nit = normalize_nit(
-        match.group(1)
+        raw_nit
     )
 
     return nit
