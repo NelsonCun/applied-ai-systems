@@ -46,6 +46,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: smartinvoice-backend
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
     restart: unless-stopped
     env_file:
       - .env
@@ -77,6 +78,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: smartinvoice-worker
+    user: "${LOCAL_UID:-1000}:${LOCAL_GID:-1000}"
     restart: unless-stopped
     command:
       [

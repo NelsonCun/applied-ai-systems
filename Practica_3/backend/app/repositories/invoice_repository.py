@@ -308,3 +308,181 @@ def list_invoices(
         invoices = cursor.fetchall()
 
     return invoices, total
+
+
+def get_invoice_ocr_data(
+    connection: Connection,
+    invoice_id: int,
+) -> dict[str, Any] | None:
+    query = """
+        SELECT
+            id AS invoice_id,
+            status::TEXT AS status,
+            ocr_text,
+            ocr_confidence,
+            extracted_data,
+            validation_errors
+        FROM invoices
+        WHERE id = %s
+        LIMIT 1
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, (invoice_id,))
+        return cursor.fetchone()
+
+
+def list_invoice_processing_logs(
+    connection: Connection,
+    invoice_id: int,
+) -> list[dict[str, Any]]:
+    query = """
+        SELECT
+            id,
+            invoice_id,
+            user_id,
+            stage::TEXT AS stage,
+            status::TEXT AS status,
+            message,
+            details,
+            started_at,
+            finished_at,
+            duration_ms
+        FROM processing_logs
+        WHERE invoice_id = %s
+        ORDER BY started_at, id
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query, (invoice_id,))
+        return cursor.fetchall()
+
+
+def confirm_invoice_review(
+    connection: Connection,
+    invoice_id: int,
+    data: dict[str, Any],
+    confirmed_by: int,
+) -> dict[str, Any] | None:
+    current_query = """
+        SELECT extracted_data
+        FROM invoices
+        WHERE id = %s
+        LIMIT 1
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            current_query,
+            (invoice_id,),
+        )
+        current = cursor.fetchone()
+
+    if current is None:
+        return None
+
+    extracted_data = current["extracted_data"] or {}
+
+    extracted_data["manual_review"] = {
+        "invoice_number": data["invoice_number"],
+        "invoice_date": data["invoice_date"].isoformat(),
+        "provider_id": data["provider_id"],
+        "category_id": data["category_id"],
+        "nit": data["nit"],
+        "subtotal": str(data["subtotal"]),
+        "tax": str(data["tax"]),
+        "total": str(data["total"]),
+        "currency": data["currency"],
+        "confirmed_by": confirmed_by,
+    }
+
+    update_query = """
+        UPDATE invoices
+        SET
+            invoice_number = %(invoice_number)s,
+            invoice_date = %(invoice_date)s,
+            provider_id = %(provider_id)s,
+            category_id = %(category_id)s,
+            detected_provider_name = %(provider_name)s,
+            detected_nit = %(nit)s,
+            subtotal = %(subtotal)s,
+            tax = %(tax)s,
+            total = %(total)s,
+            currency = %(currency)s,
+            extracted_data = %(extracted_data)s,
+            validation_errors = '[]'::JSONB,
+            status = 'PROCESSED',
+            confirmed_by = %(confirmed_by)s,
+            confirmed_at = CURRENT_TIMESTAMP,
+            processed_at = COALESCE(
+                processed_at,
+                CURRENT_TIMESTAMP
+            ),
+            last_error = NULL
+        WHERE id = %(invoice_id)s
+    """
+
+    parameters = {
+        **data,
+        "invoice_id": invoice_id,
+        "confirmed_by": confirmed_by,
+        "extracted_data": Jsonb(extracted_data),
+    }
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            update_query,
+            parameters,
+        )
+
+    log_query = """
+        INSERT INTO processing_logs (
+            invoice_id,
+            user_id,
+            stage,
+            status,
+            message,
+            details,
+            started_at,
+            finished_at,
+            duration_ms
+        )
+        VALUES (
+            %s,
+            %s,
+            'VALIDATION',
+            'SUCCESS',
+            'Factura revisada y confirmada manualmente',
+            %s,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP,
+            0
+        )
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            log_query,
+            (
+                invoice_id,
+                confirmed_by,
+                Jsonb(
+                    {
+                        "source": "manual_review",
+                        "invoice_number": (
+                            data["invoice_number"]
+                        ),
+                        "provider_id": (
+                            data["provider_id"]
+                        ),
+                    }
+                ),
+            ),
+        )
+
+    connection.commit()
+
+    return find_invoice_by_id(
+        connection,
+        invoice_id,
+    )

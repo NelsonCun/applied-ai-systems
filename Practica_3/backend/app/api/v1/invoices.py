@@ -1,4 +1,5 @@
 from math import ceil
+from pathlib import Path
 from typing import Any
 
 from fastapi import (
@@ -9,23 +10,40 @@ from fastapi import (
     HTTPException,
     Query,
     UploadFile,
+    Response,
     status,
 )
 from psycopg import Connection
+from psycopg.errors import UniqueViolation
+from fastapi.responses import FileResponse
 
 from app.api.dependencies import get_current_user
 from app.db.connection import get_connection
 from app.repositories.invoice_repository import (
+    confirm_invoice_review,
     find_invoice_by_id,
+    get_invoice_ocr_data,
+    list_invoice_processing_logs,
     list_invoices,
 )
 from app.schemas.invoice import (
     BatchUploadError,
     BatchUploadResponse,
     InvoiceListResponse,
+    InvoiceOcrResponse,
     InvoiceResponse,
+    InvoiceReviewRequest,
+    InvoiceReviewResponse,
+    ProcessingLogResponse,
     InvoiceUploadResponse,
     ProcessingQueuedResponse,
+)
+from app.repositories.provider_repository import (
+    find_provider_by_id,
+)
+from app.services.invoice_review_service import (
+    InvoiceReviewValidationError,
+    validate_invoice_review,
 )
 from app.services.invoice_upload_service import (
     UploadValidationError,
@@ -323,6 +341,254 @@ def get_invoices(
         page=page,
         page_size=page_size,
         total_pages=total_pages,
+    )
+
+
+
+@router.get(
+    "/{invoice_id}/ocr",
+    response_model=InvoiceOcrResponse,
+    summary="Consultar resultado OCR",
+)
+def get_invoice_ocr(
+    invoice_id: int,
+    connection: Connection = Depends(
+        get_connection
+    ),
+    current_user: dict[str, Any] = Depends(
+        get_current_user
+    ),
+) -> InvoiceOcrResponse:
+    del current_user
+
+    result = get_invoice_ocr_data(
+        connection,
+        invoice_id,
+    )
+
+    if result is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    return InvoiceOcrResponse(**result)
+
+
+@router.get(
+    "/{invoice_id}/logs",
+    response_model=list[ProcessingLogResponse],
+    summary="Consultar bitácora de procesamiento",
+)
+def get_invoice_logs(
+    invoice_id: int,
+    connection: Connection = Depends(
+        get_connection
+    ),
+    current_user: dict[str, Any] = Depends(
+        get_current_user
+    ),
+) -> list[ProcessingLogResponse]:
+    del current_user
+
+    invoice = find_invoice_by_id(
+        connection,
+        invoice_id,
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    return [
+        ProcessingLogResponse(**log)
+        for log in list_invoice_processing_logs(
+            connection,
+            invoice_id,
+        )
+    ]
+
+
+@router.get(
+    "/{invoice_id}/file",
+    response_class=FileResponse,
+    summary="Visualizar documento original",
+)
+def get_invoice_file(
+    invoice_id: int,
+    connection: Connection = Depends(
+        get_connection
+    ),
+    current_user: dict[str, Any] = Depends(
+        get_current_user
+    ),
+) -> Response:
+    del current_user
+
+    invoice = find_invoice_by_id(
+        connection,
+        invoice_id,
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    path = Path(invoice["file_path"])
+
+    if not path.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="El archivo físico no está disponible",
+        )
+
+    return FileResponse(
+        path=str(path),
+        media_type=invoice["mime_type"],
+        filename=invoice["original_file_name"],
+        content_disposition_type="inline",
+    )
+
+
+@router.get(
+    "/{invoice_id}/processed-file",
+    response_class=FileResponse,
+    summary="Visualizar imagen preprocesada",
+)
+def get_processed_invoice_file(
+    invoice_id: int,
+    connection: Connection = Depends(
+        get_connection
+    ),
+    current_user: dict[str, Any] = Depends(
+        get_current_user
+    ),
+) -> Response:
+    del current_user
+
+    invoice = find_invoice_by_id(
+        connection,
+        invoice_id,
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    processed_path = invoice[
+        "processed_file_path"
+    ]
+
+    if not processed_path:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="La factura todavía no posee una imagen procesada",
+        )
+
+    path = Path(processed_path)
+
+    if not path.is_file():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="La imagen procesada no está disponible",
+        )
+
+    return FileResponse(
+        path=str(path),
+        media_type="image/png",
+        filename=path.name,
+        content_disposition_type="inline",
+    )
+
+
+@router.put(
+    "/{invoice_id}/review",
+    response_model=InvoiceReviewResponse,
+    summary="Corregir y confirmar factura",
+)
+def review_invoice(
+    invoice_id: int,
+    request: InvoiceReviewRequest,
+    connection: Connection = Depends(
+        get_connection
+    ),
+    current_user: dict[str, Any] = Depends(
+        get_current_user
+    ),
+) -> InvoiceReviewResponse:
+    invoice = find_invoice_by_id(
+        connection,
+        invoice_id,
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    if invoice["status"] == "DUPLICATE":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Una factura duplicada no puede confirmarse",
+        )
+
+    provider = find_provider_by_id(
+        connection,
+        request.provider_id,
+    )
+
+    if provider is None or not provider["is_active"]:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="El proveedor no existe o está inactivo",
+        )
+
+    try:
+        validated = validate_invoice_review(
+            request.model_dump(),
+            provider,
+        )
+
+        reviewed = confirm_invoice_review(
+            connection=connection,
+            invoice_id=invoice_id,
+            data=validated,
+            confirmed_by=current_user["id"],
+        )
+
+    except InvoiceReviewValidationError as error:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=str(error),
+        ) from error
+
+    except UniqueViolation as error:
+        connection.rollback()
+
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Ya existe una factura con ese número "
+                "para el proveedor seleccionado"
+            ),
+        ) from error
+
+    if reviewed is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    return InvoiceReviewResponse(
+        message="Factura revisada y confirmada correctamente",
+        invoice=InvoiceResponse(**reviewed),
     )
 
 

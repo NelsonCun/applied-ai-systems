@@ -79,3 +79,42 @@ class ProcessingQueuedResponse(BaseModel):
     invoice_id: int
     task_id: str
     message: str
+
+
+class InvoiceReviewRequest(BaseModel):
+    invoice_number: str
+    invoice_date: date
+    provider_id: int
+    category_id: int | None = None
+    nit: str
+    subtotal: Decimal
+    tax: Decimal
+    total: Decimal
+    currency: str = "GTQ"
+
+
+class InvoiceOcrResponse(BaseModel):
+    invoice_id: int
+    status: str
+    ocr_text: str | None
+    ocr_confidence: Decimal | None
+    extracted_data: dict[str, Any]
+    validation_errors: list[Any]
+
+
+class ProcessingLogResponse(BaseModel):
+    id: int
+    invoice_id: int | None
+    user_id: int | None
+    stage: str
+    status: str
+    message: str
+    details: dict[str, Any]
+    started_at: datetime
+    finished_at: datetime | None
+    duration_ms: int | None
+
+
+class InvoiceReviewResponse(BaseModel):
+    message: str
+    invoice: InvoiceResponse
