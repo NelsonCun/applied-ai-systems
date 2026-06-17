@@ -13,6 +13,7 @@ import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import ProvidersPage from "./pages/ProvidersPage";
 import ReportsPage from "./pages/ReportsPage";
+import AutomationsPage from "./pages/AutomationsPage";
 
 
 function ProtectedLayout() {
@@ -53,20 +54,11 @@ export default function App() {
           path="/reports"
           element={<ReportsPage />}
         />
-
-
         <Route
           path="/automations"
-          element={
-            <PlaceholderPage
-              title="Automatizaciones"
-              description={
-                "Ejecuciones RPA y evidencia " +
-                "del sistema externo."
-              }
-            />
-          }
+          element={<AutomationsPage />}
         />
+
 
         <Route
           path="/emails"
