@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardPage from "./pages/DashboardPage";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
+import ProvidersPage from "./pages/ProvidersPage";
 
 
 function ProtectedLayout() {
@@ -39,15 +40,7 @@ export default function App() {
 
         <Route
           path="/providers"
-          element={
-            <PlaceholderPage
-              title="Proveedores"
-              description={
-                "Administración del catálogo " +
-                "de proveedores."
-              }
-            />
-          }
+          element={<ProvidersPage />}
         />
 
         <Route
