@@ -1,4 +1,6 @@
 import {
+  ArrowRight,
+  Check,
   FileCheck2,
   LoaderCircle,
   LockKeyhole,
@@ -100,89 +102,122 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
-      <section className="login-presentation">
-        <div className="login-presentation-content">
+      <section className="login-visual-panel">
+        <div className="login-visual-content">
           <div className="login-brand">
-            <div className="login-brand-symbol">
-              <ScanText size={32} />
+            <div className="login-brand-mark">
+              <ScanText size={25} />
             </div>
 
             <div>
               <strong>SmartInvoice</strong>
               <span>
-                Procesamiento inteligente
-                de facturas
+                Gestión inteligente de facturas
               </span>
             </div>
           </div>
 
-          <div className="login-hero">
-            <p className="eyebrow">
+          <div className="login-visual-heading">
+            <span className="login-kicker">
               Administración documental
-            </p>
+            </span>
 
             <h1>
-              Transforme documentos en
-              información útil.
+              De una factura a información
+              confiable.
             </h1>
 
             <p>
-              Digitalización, OCR,
-              validación, reportes y
-              automatización desde una
-              plataforma centralizada.
+              Digitalice, valide y gestione
+              documentos desde una plataforma
+              centralizada.
             </p>
           </div>
 
-          <div className="login-features">
-            <article>
-              <FileCheck2 size={22} />
+          <div className="document-scene">
+            <article className="document-card document-card-back">
+              <div className="document-mini-header">
+                <span>SMART</span>
+                <strong>INVOICE</strong>
+              </div>
 
-              <div>
-                <strong>
-                  Procesamiento automático
-                </strong>
+              <div className="document-brush" />
 
-                <span>
-                  Extracción y validación
-                  mediante OCR.
-                </span>
+              <div className="document-lines">
+                <span />
+                <span />
+                <span />
+              </div>
+
+              <div className="document-circle-button">
+                <ArrowRight size={20} />
               </div>
             </article>
 
-            <article>
-              <ShieldCheck size={22} />
+            <article className="document-card document-card-front">
+              <div className="invoice-preview-header">
+                <div>
+                  <span>Factura procesada</span>
+                  <strong>FAC-2026-001</strong>
+                </div>
 
-              <div>
-                <strong>
-                  Gestión controlada
-                </strong>
-
-                <span>
-                  Historial, trazabilidad
-                  y acceso protegido.
-                </span>
+                <div className="invoice-preview-icon">
+                  <FileCheck2 size={22} />
+                </div>
               </div>
+
+              <div className="invoice-preview-row">
+                <span>Proveedor</span>
+                <strong>
+                  Tecnología Maya, S.A.
+                </strong>
+              </div>
+
+              <div className="invoice-preview-row">
+                <span>NIT</span>
+                <strong>1234567-8</strong>
+              </div>
+
+              <div className="invoice-preview-row">
+                <span>Total</span>
+                <strong>Q 1,120.00</strong>
+              </div>
+
+              <div className="invoice-preview-status">
+                <Check size={16} />
+                Validación completada
+              </div>
+
+              <div className="invoice-preview-brush" />
             </article>
+          </div>
+
+          <div className="login-visual-footer">
+            <ShieldCheck size={18} />
+
+            <span>
+              Acceso seguro y trazabilidad
+              completa.
+            </span>
           </div>
         </div>
       </section>
 
-      <section className="login-form-section">
+      <section className="login-form-panel">
         <form
           className="login-card"
           onSubmit={handleSubmit}
         >
-          <header>
-            <p className="eyebrow">
-              Acceso administrativo
-            </p>
+          <header className="login-card-header">
+            <span className="section-kicker">
+              Bienvenido
+            </span>
 
             <h2>Iniciar sesión</h2>
 
             <p>
               Ingrese sus credenciales para
-              continuar.
+              acceder al panel administrativo.
             </p>
           </header>
 
@@ -192,13 +227,13 @@ export default function LoginPage() {
             </span>
 
             <div className="input-with-icon">
-              <UserRound size={19} />
+              <UserRound size={18} />
 
               <input
                 type="text"
                 value={identifier}
                 autoComplete="username"
-                placeholder="admin"
+                placeholder="Ingrese su usuario"
                 onChange={(event) =>
                   setIdentifier(
                     event.target.value,
@@ -212,13 +247,13 @@ export default function LoginPage() {
             <span>Contraseña</span>
 
             <div className="input-with-icon">
-              <LockKeyhole size={19} />
+              <LockKeyhole size={18} />
 
               <input
                 type="password"
                 value={password}
                 autoComplete="current-password"
-                placeholder="••••••••"
+                placeholder="Ingrese su contraseña"
                 onChange={(event) =>
                   setPassword(
                     event.target.value,
@@ -238,36 +273,36 @@ export default function LoginPage() {
           )}
 
           <button
-            className="primary-button login-submit"
+            className="login-submit-button"
             type="submit"
             disabled={submitting}
           >
-            {submitting ? (
-              <>
+            <span>
+              {submitting
+                ? "Validando"
+                : "Ingresar"}
+            </span>
+
+            <span className="login-submit-icon">
+              {submitting ? (
                 <LoaderCircle
-                  size={19}
+                  size={18}
                   className="spin"
                 />
-
-                Validando...
-              </>
-            ) : (
-              "Ingresar"
-            )}
+              ) : (
+                <ArrowRight size={18} />
+              )}
+            </span>
           </button>
 
-          <div className="login-test-credentials">
-            <strong>
-              Credenciales iniciales
-            </strong>
+          <div className="login-access-note">
+            <span>Acceso inicial</span>
 
-            <span>
-              Usuario: admin
-            </span>
-
-            <span>
-              Contraseña: Admin123*
-            </span>
+            <div>
+              <strong>admin</strong>
+              <span>/</span>
+              <strong>Admin123*</strong>
+            </div>
           </div>
         </form>
       </section>

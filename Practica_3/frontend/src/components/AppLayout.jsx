@@ -3,12 +3,12 @@ import {
   Bot,
   Building2,
   FileSpreadsheet,
-  FileText,
   LogOut,
   Mail,
   Menu,
   PanelLeftClose,
   ReceiptText,
+  ScanText,
   ShieldCheck,
 } from "lucide-react";
 
@@ -82,7 +82,7 @@ export default function AppLayout() {
       className={[
         "app-shell",
         sidebarCollapsed
-          ? "sidebar-collapsed"
+          ? "app-shell-collapsed"
           : "",
       ]
         .filter(Boolean)
@@ -98,15 +98,19 @@ export default function AppLayout() {
           .filter(Boolean)
           .join(" ")}
       >
-        <div className="brand">
-          <div className="brand-symbol">
-            <FileText size={25} />
+        <div className="sidebar-brand">
+          <div className="sidebar-brand-mark">
+            <ScanText size={24} />
           </div>
 
-          <div className="brand-copy">
+          <div className="sidebar-brand-copy">
             <strong>SmartInvoice</strong>
-            <span>Administración inteligente</span>
+            <span>Gestión documental</span>
           </div>
+        </div>
+
+        <div className="sidebar-section-label">
+          Navegación
         </div>
 
         <nav className="sidebar-navigation">
@@ -121,6 +125,9 @@ export default function AppLayout() {
                 key={path}
                 to={path}
                 end={end}
+                onClick={() =>
+                  setMobileOpen(false)
+                }
                 className={({
                   isActive,
                 }) =>
@@ -133,34 +140,36 @@ export default function AppLayout() {
                     .filter(Boolean)
                     .join(" ")
                 }
-                onClick={() =>
-                  setMobileOpen(false)
-                }
               >
-                <Icon size={20} />
+                <span className="navigation-icon">
+                  <Icon size={19} />
+                </span>
 
-                <span>{label}</span>
+                <span className="navigation-label">
+                  {label}
+                </span>
               </NavLink>
             ),
           )}
         </nav>
 
         <div className="sidebar-footer">
-          <div className="security-badge">
-            <ShieldCheck size={19} />
+          <div className="sidebar-security">
+            <ShieldCheck size={18} />
 
             <div>
               <strong>Sesión protegida</strong>
-              <span>JWT activo</span>
+              <span>Autenticación JWT</span>
             </div>
           </div>
 
           <button
-            className="logout-button"
+            className="sidebar-logout"
             type="button"
             onClick={handleLogout}
           >
-            <LogOut size={19} />
+            <LogOut size={18} />
+
             <span>Cerrar sesión</span>
           </button>
         </div>
@@ -179,20 +188,20 @@ export default function AppLayout() {
 
       <section className="application-area">
         <header className="topbar">
-          <div className="topbar-actions">
+          <div className="topbar-left">
             <button
-              className="icon-button mobile-menu-button"
+              className="topbar-icon-button mobile-menu-button"
               type="button"
               aria-label="Abrir menú"
               onClick={() =>
                 setMobileOpen(true)
               }
             >
-              <Menu size={21} />
+              <Menu size={20} />
             </button>
 
             <button
-              className="icon-button collapse-button"
+              className="topbar-icon-button collapse-button"
               type="button"
               aria-label="Contraer menú"
               onClick={() =>
@@ -201,18 +210,23 @@ export default function AppLayout() {
                 )
               }
             >
-              <PanelLeftClose size={21} />
+              <PanelLeftClose size={20} />
             </button>
+
+            <div className="topbar-context">
+              <span>Panel administrativo</span>
+              <strong>SmartInvoice</strong>
+            </div>
           </div>
 
           <div className="topbar-user">
-            <div className="user-avatar">
+            <div className="topbar-user-avatar">
               {user?.full_name
                 ?.charAt(0)
                 ?.toUpperCase() || "A"}
             </div>
 
-            <div className="user-copy">
+            <div className="topbar-user-copy">
               <strong>
                 {user?.full_name}
               </strong>

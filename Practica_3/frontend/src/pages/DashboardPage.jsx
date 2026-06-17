@@ -2,7 +2,6 @@ import {
   AlertTriangle,
   CheckCircle2,
   CircleDollarSign,
-  FileClock,
   Files,
   LoaderCircle,
   RefreshCw,
@@ -44,13 +43,22 @@ const statusLabels = {
   DUPLICATE: "Duplicadas",
 };
 
-const chartColors = [
-  "#2563eb",
-  "#16a34a",
-  "#d97706",
-  "#dc2626",
-  "#7c3aed",
-  "#0891b2",
+const statusColors = {
+  PENDING: "#F2B705",
+  PROCESSING: "#3B82F6",
+  PROCESSED: "#22A06B",
+  REJECTED: "#F97316",
+  ERROR: "#DC4C64",
+  DUPLICATE: "#8B5CF6",
+};
+
+const providerColors = [
+  "#F2B705",
+  "#3B82F6",
+  "#22A06B",
+  "#8B5CF6",
+  "#F97316",
+  "#0891B2",
 ];
 
 
@@ -120,9 +128,7 @@ export default function DashboardPage() {
             statusLabels[item.status] ||
             item.status,
           value: item.invoice_count,
-          total: Number(
-            item.total_amount || 0,
-          ),
+          status: item.status,
         }),
       ),
     [dashboard],
@@ -139,8 +145,6 @@ export default function DashboardPage() {
         .slice(0, 6)
         .map((provider) => ({
           name: provider.provider_name,
-          facturas:
-            provider.invoice_count,
           total: Number(
             provider.total_amount,
           ),
@@ -149,12 +153,24 @@ export default function DashboardPage() {
   );
 
 
+  const currentDate =
+    new Intl.DateTimeFormat(
+      "es-GT",
+      {
+        weekday: "long",
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      },
+    ).format(new Date());
+
+
   if (loading) {
     return (
       <section className="page-state">
         <LoaderCircle
           className="spin"
-          size={32}
+          size={31}
         />
 
         <p>Cargando indicadores...</p>
@@ -168,7 +184,9 @@ export default function DashboardPage() {
       <section className="page-state">
         <AlertTriangle size={34} />
 
-        <h2>No se pudo cargar el dashboard</h2>
+        <h2>
+          No se pudo cargar el dashboard
+        </h2>
 
         <p>{error}</p>
 
@@ -177,7 +195,7 @@ export default function DashboardPage() {
           type="button"
           onClick={loadDashboard}
         >
-          <RefreshCw size={18} />
+          <RefreshCw size={17} />
           Reintentar
         </button>
       </section>
@@ -199,22 +217,22 @@ export default function DashboardPage() {
       variant: "blue",
     },
     {
-      label: "Facturas procesadas",
+      label: "Procesadas",
       value: formatNumber(
         summary.processed_invoices,
       ),
-      detail: "Procesamiento completado",
+      detail: "Validación completada",
       icon: CheckCircle2,
       variant: "green",
     },
     {
-      label: "Monto procesado",
+      label: "Monto acumulado",
       value: formatCurrency(
         summary.processed_total,
       ),
-      detail: "Total acumulado",
+      detail: "Facturación procesada",
       icon: CircleDollarSign,
-      variant: "purple",
+      variant: "violet",
     },
     {
       label: "Confianza OCR",
@@ -231,28 +249,36 @@ export default function DashboardPage() {
 
   return (
     <div className="dashboard-page">
-      <header className="page-header">
+      <header className="page-header dashboard-header">
         <div>
-          <p className="eyebrow">
+          <span className="section-kicker">
             Resumen administrativo
-          </p>
+          </span>
 
-          <h1>Dashboard</h1>
+          <h1>
+            Control de facturación
+          </h1>
 
           <p>
-            Estado general del procesamiento
-            y administración de facturas.
+            Consulte el estado general del
+            procesamiento documental.
           </p>
         </div>
 
-        <button
-          className="secondary-button"
-          type="button"
-          onClick={loadDashboard}
-        >
-          <RefreshCw size={18} />
-          Actualizar
-        </button>
+        <div className="dashboard-header-actions">
+          <span className="dashboard-date">
+            {currentDate}
+          </span>
+
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={loadDashboard}
+          >
+            <RefreshCw size={17} />
+            Actualizar
+          </button>
+        </div>
       </header>
 
       <section className="metric-grid">
@@ -265,22 +291,26 @@ export default function DashboardPage() {
             variant,
           }) => (
             <article
-              className="metric-card"
+              className={
+                `metric-card metric-card-${variant}`
+              }
               key={label}
             >
-              <div
-                className={
-                  `metric-icon metric-${variant}`
-                }
-              >
-                <Icon size={23} />
+              <div className="metric-card-top">
+                <span>{label}</span>
+
+                <div
+                  className={
+                    `metric-icon metric-icon-${variant}`
+                  }
+                >
+                  <Icon size={20} />
+                </div>
               </div>
 
-              <div className="metric-copy">
-                <span>{label}</span>
-                <strong>{value}</strong>
-                <small>{detail}</small>
-              </div>
+              <strong>{value}</strong>
+
+              <small>{detail}</small>
             </article>
           ),
         )}
@@ -290,159 +320,175 @@ export default function DashboardPage() {
         <article className="content-card">
           <header className="content-card-header">
             <div>
-              <h2>Distribución por estado</h2>
+              <span className="card-kicker">
+                Distribución
+              </span>
+
+              <h2>
+                Estado de documentos
+              </h2>
 
               <p>
-                Cantidad de documentos por
-                resultado del procesamiento.
+                Resultado actual del flujo
+                de procesamiento.
               </p>
             </div>
           </header>
 
           <div className="chart-container">
-            {statusData.length > 0 ? (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
-              >
-                <PieChart>
-                  <Pie
-                    data={statusData}
-                    dataKey="value"
-                    nameKey="name"
-                    innerRadius={66}
-                    outerRadius={102}
-                    paddingAngle={3}
-                  >
-                    {statusData.map(
-                      (_, index) => (
-                        <Cell
-                          key={index}
-                          fill={
-                            chartColors[
-                              index %
-                                chartColors.length
-                            ]
-                          }
-                        />
-                      ),
-                    )}
-                  </Pie>
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
+              <PieChart>
+                <Pie
+                  data={statusData}
+                  dataKey="value"
+                  nameKey="name"
+                  innerRadius={72}
+                  outerRadius={106}
+                  paddingAngle={4}
+                >
+                  {statusData.map(
+                    (item) => (
+                      <Cell
+                        key={item.status}
+                        fill={
+                          statusColors[
+                            item.status
+                          ] || "#7A7770"
+                        }
+                      />
+                    ),
+                  )}
+                </Pie>
 
-                  <Tooltip
-                    formatter={(
-                      value,
-                      name,
-                    ) => [
-                      formatNumber(value),
-                      name,
-                    ]}
-                  />
+                <Tooltip
+                  formatter={(value) => [
+                    formatNumber(value),
+                    "Facturas",
+                  ]}
+                />
 
-                  <Legend />
-                </PieChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="empty-state">
-                <FileClock size={30} />
-                <p>
-                  No existen facturas
-                  registradas.
-                </p>
-              </div>
-            )}
+                <Legend
+                  iconType="circle"
+                  wrapperStyle={{
+                    fontSize: "12px",
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
           </div>
         </article>
 
         <article className="content-card">
           <header className="content-card-header">
             <div>
-              <h2>Totales por proveedor</h2>
+              <span className="card-kicker">
+                Proveedores
+              </span>
+
+              <h2>
+                Monto procesado
+              </h2>
 
               <p>
-                Valor procesado de los
-                principales proveedores.
+                Totales acumulados por
+                proveedor.
               </p>
             </div>
           </header>
 
           <div className="chart-container">
-            {providerData.length > 0 ? (
-              <ResponsiveContainer
-                width="100%"
-                height="100%"
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
+              <BarChart
+                data={providerData}
+                margin={{
+                  top: 10,
+                  right: 10,
+                  left: 5,
+                  bottom: 45,
+                }}
               >
-                <BarChart
-                  data={providerData}
-                  margin={{
-                    top: 10,
-                    right: 15,
-                    left: 10,
-                    bottom: 35,
-                  }}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                  />
-
-                  <XAxis
-                    dataKey="name"
-                    angle={-18}
-                    textAnchor="end"
-                    interval={0}
-                    height={80}
-                    tick={{
-                      fontSize: 11,
-                    }}
-                  />
-
-                  <YAxis
-                    tickFormatter={(value) =>
-                      `Q${value}`
-                    }
-                  />
-
-                  <Tooltip
-                    formatter={(value) => [
-                      formatCurrency(value),
-                      "Total",
-                    ]}
-                  />
-
-                  <Bar
-                    dataKey="total"
-                    name="Total"
-                    fill="#2563eb"
-                    radius={[7, 7, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            ) : (
-              <div className="empty-state">
-                <CircleDollarSign
-                  size={30}
+                <CartesianGrid
+                  strokeDasharray="4 4"
+                  vertical={false}
+                  stroke="#E6E2D9"
                 />
 
-                <p>
-                  No existen montos para
-                  mostrar.
-                </p>
-              </div>
-            )}
+                <XAxis
+                  dataKey="name"
+                  angle={-18}
+                  textAnchor="end"
+                  interval={0}
+                  height={90}
+                  tick={{
+                    fontSize: 11,
+                    fill: "#77746D",
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+
+                <YAxis
+                  tickFormatter={(value) =>
+                    `Q${value}`
+                  }
+                  tick={{
+                    fontSize: 11,
+                    fill: "#77746D",
+                  }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+
+                <Tooltip
+                  formatter={(value) => [
+                    formatCurrency(value),
+                    "Total",
+                  ]}
+                />
+
+                <Bar
+                  dataKey="total"
+                  radius={[9, 9, 0, 0]}
+                  maxBarSize={54}
+                >
+                  {providerData.map(
+                    (provider, index) => (
+                      <Cell
+                        key={
+                          `provider-${provider.name}`
+                        }
+                        fill={
+                          providerColors[
+                            index %
+                              providerColors.length
+                          ]
+                        }
+                      />
+                    ),
+                  )}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
           </div>
         </article>
       </section>
 
-      <section className="content-card">
+      <section className="content-card operational-card">
         <header className="content-card-header">
           <div>
-            <h2>Resumen operativo</h2>
+            <span className="card-kicker">
+              Operación
+            </span>
 
-            <p>
-              Indicadores complementarios
-              del procesamiento documental.
-            </p>
+            <h2>
+              Estado complementario
+            </h2>
           </div>
         </header>
 
@@ -457,7 +503,7 @@ export default function DashboardPage() {
           </article>
 
           <article>
-            <span>En procesamiento</span>
+            <span>Procesando</span>
             <strong>
               {formatNumber(
                 summary.processing_invoices,
