@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor Usuario
+    participant Frontend
+    participant API as FastAPI
+    participant DB as PostgreSQL
+    participant Redis
+    participant Worker as Celery
+    participant CV as OpenCV
+    participant OCR as Tesseract
+
+    Usuario->>Frontend: Selecciona factura
+    Frontend->>API: POST /invoices/upload
+    API->>API: Valida formato, firma y tamaño
+    API->>DB: Registra PENDING y bitácora UPLOAD
+    API->>Redis: Encola process_invoice
+    API-->>Frontend: invoice + task_id
+    Redis->>Worker: Entrega tarea
+    Worker->>DB: Cambia a PROCESSING
+    Worker->>CV: Carga y preprocesa
+    CV-->>Worker: Imagen procesada
+    Worker->>OCR: Extrae texto
+    OCR-->>Worker: Texto y confianza
+    Worker->>Worker: Parser y validaciones
+    Worker->>DB: Guarda campos, estado y bitácora
+    Frontend->>API: Consulta estado
+    API->>DB: SELECT factura
+    API-->>Frontend: Resultado
