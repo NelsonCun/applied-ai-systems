@@ -1,7 +1,6 @@
 fastapi
 uvicorn[standard]
-sqlalchemy
-psycopg[binary]
+psycopg[binary,pool]
 pydantic-settings
 python-multipart
 redis

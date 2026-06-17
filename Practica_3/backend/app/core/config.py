@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 480
 
     database_url: str = (
-        "postgresql+psycopg://smartinvoice_user:"
+        "postgresql://smartinvoice_user:"
         "smartinvoice_password@db:5432/smartinvoice"
     )
 

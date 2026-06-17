@@ -1,18 +1,26 @@
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from redis import Redis
-from sqlalchemy import text
 
 from app.core.config import settings
-from app.db.session import engine
+from app.db.connection import close_pool, open_pool, pool
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    open_pool()
+    yield
+    close_pool()
 
 
 app = FastAPI(
     title=settings.project_name,
     description="API REST para procesamiento inteligente de facturas.",
     version="1.0.0",
+    lifespan=lifespan,
 )
 
 app.add_middleware(
@@ -41,8 +49,11 @@ def health() -> dict:
     }
 
     try:
-        with engine.connect() as connection:
-            connection.execute(text("SELECT 1"))
+        with pool.connection() as connection:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1 AS result")
+                cursor.fetchone()
+
         services["database"] = "available"
     except Exception:
         pass
@@ -57,7 +68,10 @@ def health() -> dict:
     except Exception:
         pass
 
-    healthy = all(value == "available" for value in services.values())
+    healthy = all(
+        service_status == "available"
+        for service_status in services.values()
+    )
 
     response = {
         "status": "healthy" if healthy else "degraded",
