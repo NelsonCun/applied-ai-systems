@@ -7,7 +7,10 @@ celery_app = Celery(
     "smartinvoice",
     broker=settings.celery_broker_url,
     backend=settings.celery_result_backend,
-    include=["app.tasks.health_tasks"],
+    include=[
+        "app.tasks.health_tasks",
+        "app.tasks.invoice_tasks",
+    ],
 )
 
 celery_app.conf.update(

@@ -49,6 +49,7 @@ class InvoiceResponse(BaseModel):
 class InvoiceUploadResponse(BaseModel):
     message: str
     is_duplicate: bool
+    task_id: str | None = None
     invoice: InvoiceResponse
 
 
@@ -72,3 +73,9 @@ class InvoiceListResponse(BaseModel):
     page: int
     page_size: int
     total_pages: int
+
+
+class ProcessingQueuedResponse(BaseModel):
+    invoice_id: int
+    task_id: str
+    message: str

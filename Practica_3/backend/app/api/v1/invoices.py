@@ -25,10 +25,14 @@ from app.schemas.invoice import (
     InvoiceListResponse,
     InvoiceResponse,
     InvoiceUploadResponse,
+    ProcessingQueuedResponse,
 )
 from app.services.invoice_upload_service import (
     UploadValidationError,
     store_uploaded_invoice,
+)
+from app.tasks.invoice_tasks import (
+    process_invoice_task,
 )
 
 
@@ -52,7 +56,7 @@ VALID_STATUSES = {
     "/upload",
     response_model=InvoiceUploadResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="Cargar una factura",
+    summary="Cargar y procesar una factura",
 )
 async def upload_invoice(
     file: UploadFile = File(...),
@@ -75,13 +79,24 @@ async def upload_invoice(
         )
     except UploadValidationError as error:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=(
+                status.HTTP_422_UNPROCESSABLE_ENTITY
+            ),
             detail=str(error),
         ) from error
+
+    task_id: str | None = None
+
+    if not result["is_duplicate"]:
+        task = process_invoice_task.delay(
+            result["invoice"]["id"]
+        )
+        task_id = task.id
 
     return InvoiceUploadResponse(
         message=result["message"],
         is_duplicate=result["is_duplicate"],
+        task_id=task_id,
         invoice=InvoiceResponse(
             **result["invoice"]
         ),
@@ -106,7 +121,9 @@ async def upload_invoice_batch(
 ) -> BatchUploadResponse:
     if len(files) > 20:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=(
+                status.HTTP_422_UNPROCESSABLE_ENTITY
+            ),
             detail=(
                 "Solo se permiten hasta 20 archivos "
                 "por carga masiva"
@@ -129,8 +146,15 @@ async def upload_invoice_batch(
                 category_id=category_id,
             )
 
+            task_id: str | None = None
+
             if result["is_duplicate"]:
                 duplicate_count += 1
+            else:
+                task = process_invoice_task.delay(
+                    result["invoice"]["id"]
+                )
+                task_id = task.id
 
             items.append(
                 InvoiceUploadResponse(
@@ -138,6 +162,7 @@ async def upload_invoice_batch(
                     is_duplicate=(
                         result["is_duplicate"]
                     ),
+                    task_id=task_id,
                     invoice=InvoiceResponse(
                         **result["invoice"]
                     ),
@@ -170,6 +195,63 @@ async def upload_invoice_batch(
         failed=len(errors),
         items=items,
         errors=errors,
+    )
+
+
+@router.post(
+    "/{invoice_id}/process",
+    response_model=ProcessingQueuedResponse,
+    status_code=status.HTTP_202_ACCEPTED,
+    summary="Procesar o reprocesar una factura",
+)
+def queue_invoice_processing(
+    invoice_id: int,
+    connection: Connection = Depends(
+        get_connection
+    ),
+    current_user: dict[str, Any] = Depends(
+        get_current_user
+    ),
+) -> ProcessingQueuedResponse:
+    del current_user
+
+    invoice = find_invoice_by_id(
+        connection,
+        invoice_id,
+    )
+
+    if invoice is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Factura no encontrada",
+        )
+
+    if invoice["status"] == "DUPLICATE":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "Una factura duplicada no puede procesarse"
+            ),
+        )
+
+    if invoice["status"] == "PROCESSING":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                "La factura ya está siendo procesada"
+            ),
+        )
+
+    task = process_invoice_task.delay(
+        invoice_id
+    )
+
+    return ProcessingQueuedResponse(
+        invoice_id=invoice_id,
+        task_id=task.id,
+        message=(
+            "La factura fue enviada a la cola de procesamiento"
+        ),
     )
 
 

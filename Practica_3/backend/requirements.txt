@@ -11,3 +11,11 @@ email-validator
 httpx
 pytest
 pytest-asyncio
+numpy
+opencv-python-headless
+pytesseract
+PyMuPDF
+Pillow
+python-dateutil
+rapidfuzz
+reportlab
