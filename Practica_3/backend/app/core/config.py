@@ -17,6 +17,11 @@ class Settings(BaseSettings):
 
     processed_dir: str = "/app/storage/processed"
     reports_dir: str = "/app/storage/reports"
+
+    rpa_target_url: str = "http://rpa-target:8080"
+    rpa_username: str = "robot"
+    rpa_password: str = "robot123"
+    rpa_evidence_dir: str = "/app/storage/rpa"
     tesseract_language: str = "spa+eng"
     ocr_min_confidence: float = 60
     ocr_dpi: int = 300

@@ -103,6 +103,36 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      rpa-target:
+        condition: service_healthy
+    networks:
+      - smartinvoice-network
+
+  rpa-target:
+    build:
+      context: ./rpa-target
+      dockerfile: Dockerfile
+      args:
+        APP_UID: ${LOCAL_UID:-1000}
+        APP_GID: ${LOCAL_GID:-1000}
+    container_name: smartinvoice-rpa-target
+    restart: unless-stopped
+    environment:
+      RPA_USERNAME: ${RPA_USERNAME}
+      RPA_PASSWORD: ${RPA_PASSWORD}
+      RPA_DATABASE_PATH: /data/rpa_target.db
+    volumes:
+      - rpa_target_data:/data
+    ports:
+      - "8082:8080"
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - curl -fsS http://127.0.0.1:8080/health > /dev/null || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
     networks:
       - smartinvoice-network
 
@@ -139,6 +169,7 @@ volumes:
   postgres_data:
   redis_data:
   frontend_node_modules:
+  rpa_target_data:
 
 networks:
   smartinvoice-network:

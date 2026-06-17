@@ -9,45 +9,34 @@ ENV PYTHONUNBUFFERED=1
 WORKDIR /app
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        curl \
-        chromium \
-        gcc \
-        libgl1 \
-        libglib2.0-0 \
-        poppler-utils \
-        tesseract-ocr \
-        tesseract-ocr-spa \
+    && apt-get install -y --no-install-recommends curl \
     && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd \
         --gid "${APP_GID}" \
-        smartinvoice \
+        rpatarget \
     && useradd \
         --uid "${APP_UID}" \
         --gid "${APP_GID}" \
         --create-home \
         --shell /usr/sbin/nologin \
-        smartinvoice
+        rpatarget
 
 COPY requirements.txt .
 
 RUN pip install --no-cache-dir --upgrade pip \
     && pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+COPY app.py .
 
-RUN mkdir -p \
-        /app/storage/uploads \
-        /app/storage/processed \
-        /app/storage/reports \
-        /app/storage/rpa \
+RUN mkdir -p /data \
     && chown -R \
         "${APP_UID}:${APP_GID}" \
-        /app
+        /app \
+        /data
 
-USER smartinvoice
+USER rpatarget
 
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "8080"]
