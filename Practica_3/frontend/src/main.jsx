@@ -9,6 +9,7 @@ import App from "./App";
 import { AuthProvider } from "./context/AuthContext";
 
 import "./styles.css";
+import "./modern-theme.css";
 
 
 ReactDOM.createRoot(
