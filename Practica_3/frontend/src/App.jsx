@@ -12,6 +12,7 @@ import InvoicesPage from "./pages/InvoicesPage";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import ProvidersPage from "./pages/ProvidersPage";
+import ReportsPage from "./pages/ReportsPage";
 
 
 function ProtectedLayout() {
@@ -48,19 +49,11 @@ export default function App() {
           path="/invoices"
           element={<InvoicesPage />}
         />
-
         <Route
           path="/reports"
-          element={
-            <PlaceholderPage
-              title="Reportes"
-              description={
-                "Generación y descarga de " +
-                "reportes administrativos."
-              }
-            />
-          }
+          element={<ReportsPage />}
         />
+
 
         <Route
           path="/automations"
