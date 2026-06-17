@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 480
 
+    upload_dir: str = "/app/storage/uploads"
+    max_upload_size_mb: int = 15
+
     database_url: str = (
         "postgresql://smartinvoice_user:"
         "smartinvoice_password@db:5432/smartinvoice"
