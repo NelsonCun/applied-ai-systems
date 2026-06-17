@@ -1,3 +1,5 @@
+import psycopg
+
 from app.services.invoice_processing_service import (
     process_invoice,
 )
@@ -7,7 +9,11 @@ from app.tasks.celery_app import celery_app
 @celery_app.task(
     bind=True,
     name="smartinvoice.process_invoice",
-    autoretry_for=(Exception,),
+    autoretry_for=(
+        psycopg.OperationalError,
+        ConnectionError,
+        TimeoutError,
+    ),
     retry_backoff=10,
     retry_jitter=True,
     retry_kwargs={

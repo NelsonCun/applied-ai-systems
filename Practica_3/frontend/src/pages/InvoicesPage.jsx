@@ -2006,13 +2006,7 @@ export default function InvoicesPage() {
                 type="button"
                 disabled={
                   actionLoading ||
-                  ![
-                    "PROCESSED",
-                    "ERROR",
-                    "REJECTED",
-                  ].includes(
-                    selectedInvoice.status,
-                  )
+                  !selectedInvoice.processed_file_path
                 }
                 onClick={() =>
                   openProtectedFile(

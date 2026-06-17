@@ -139,6 +139,50 @@ def insert_processing_log(
         )
 
 
+
+def find_duplicate_invoice(
+    connection: Connection,
+    invoice_id: int,
+    provider_id: int | None,
+    invoice_number: str | None,
+) -> dict[str, Any] | None:
+    if (
+        provider_id is None
+        or not invoice_number
+        or not invoice_number.strip()
+    ):
+        return None
+
+    query = """
+        SELECT
+            id,
+            invoice_number,
+            provider_id,
+            original_file_name,
+            status
+        FROM invoices
+        WHERE id <> %s
+          AND provider_id = %s
+          AND UPPER(TRIM(invoice_number))
+              = UPPER(TRIM(%s))
+          AND status <> 'DUPLICATE'::invoice_status
+        ORDER BY id ASC
+        LIMIT 1
+    """
+
+    with connection.cursor() as cursor:
+        cursor.execute(
+            query,
+            (
+                invoice_id,
+                provider_id,
+                invoice_number,
+            ),
+        )
+
+        return cursor.fetchone()
+
+
 def complete_invoice_processing(
     connection: Connection,
     invoice_id: int,
@@ -151,6 +195,7 @@ def complete_invoice_processing(
             invoice_date = %(invoice_date)s,
             provider_id = %(provider_id)s,
             category_id = %(category_id)s,
+            duplicate_of_invoice_id = %(duplicate_of_invoice_id)s,
             detected_provider_name = %(detected_provider_name)s,
             detected_nit = %(detected_nit)s,
             subtotal = %(subtotal)s,
@@ -171,6 +216,9 @@ def complete_invoice_processing(
     parameters = {
         **data,
         "invoice_id": invoice_id,
+        "duplicate_of_invoice_id": (
+            data.get("duplicate_of_invoice_id")
+        ),
         "extracted_data": Jsonb(
             data["extracted_data"]
         ),

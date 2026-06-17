@@ -24,6 +24,7 @@ from app.ocr.parser import (
 from app.repositories.processing_repository import (
     complete_invoice_processing,
     fail_invoice_processing,
+    find_duplicate_invoice,
     find_provider_by_nit,
     get_invoice_for_processing,
     insert_processing_log,
@@ -333,11 +334,44 @@ def process_invoice(
                 }
             )
 
-        final_status = (
-            "REJECTED"
-            if validation_errors
-            else "PROCESSED"
+        duplicate_invoice = (
+            find_duplicate_invoice(
+                connection=connection,
+                invoice_id=invoice_id,
+                provider_id=provider_id,
+                invoice_number=extracted.get(
+                    "invoice_number"
+                ),
+            )
         )
+
+        if duplicate_invoice is not None:
+            validation_errors.append(
+                {
+                    "field": "invoice_number",
+                    "message": (
+                        "La factura ya fue registrada "
+                        "anteriormente"
+                    ),
+                    "duplicate_of_invoice_id": (
+                        duplicate_invoice["id"]
+                    ),
+                    "duplicate_invoice_number": (
+                        duplicate_invoice[
+                            "invoice_number"
+                        ]
+                    ),
+                }
+            )
+
+            final_status = "DUPLICATE"
+
+        else:
+            final_status = (
+                "REJECTED"
+                if validation_errors
+                else "PROCESSED"
+            )
 
         extracted_data = {
             "fields": {
@@ -377,6 +411,11 @@ def process_invoice(
                 ),
                 "provider_id": provider_id,
                 "category_id": category_id,
+                "duplicate_of_invoice_id": (
+                    duplicate_invoice["id"]
+                    if duplicate_invoice
+                    else None
+                ),
                 "detected_provider_name": (
                     matched_provider["name"]
                     if matched_provider
@@ -444,13 +483,25 @@ def process_invoice(
                 else "SUCCESS"
             ),
             message=(
-                "Documento rechazado por validaciones"
-                if validation_errors
-                else "Documento validado correctamente"
+                "Documento identificado como duplicado"
+                if final_status == "DUPLICATE"
+                else (
+                    "Documento rechazado por validaciones"
+                    if validation_errors
+                    else (
+                        "Documento validado "
+                        "correctamente"
+                    )
+                )
             ),
             details={
                 "errors": validation_errors,
                 "final_status": final_status,
+                "duplicate_of_invoice_id": (
+                    duplicate_invoice["id"]
+                    if duplicate_invoice
+                    else None
+                ),
             },
         )
 
@@ -465,6 +516,11 @@ def process_invoice(
             ),
             "validation_errors": (
                 validation_errors
+            ),
+            "duplicate_of_invoice_id": (
+                duplicate_invoice["id"]
+                if duplicate_invoice
+                else None
             ),
         }
 
