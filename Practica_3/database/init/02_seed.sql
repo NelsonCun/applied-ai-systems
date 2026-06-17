@@ -47,7 +47,7 @@ INSERT INTO providers (
 SELECT
     'Tecnología Maya, S.A.',
     '1234567-8',
-    'ventas@tecnologiamaya.test',
+    'ventas@tecnologiamaya.com',
     '2222-1001',
     'Ciudad de Guatemala',
     category.id,
@@ -74,7 +74,7 @@ INSERT INTO providers (
 SELECT
     'Distribuidora Quetzal, S.A.',
     '7654321-0',
-    'facturacion@quetzal.test',
+    'facturacion@quetzal.com',
     '2222-1002',
     'Mixco, Guatemala',
     category.id,
@@ -101,7 +101,7 @@ INSERT INTO providers (
 SELECT
     'Servicios Chapines',
     '9876543-K',
-    'contacto@servicioschapines.test',
+    'contacto@servicioschapines.com',
     '2222-1003',
     'Antigua Guatemala',
     category.id,
