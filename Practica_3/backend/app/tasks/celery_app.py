@@ -12,6 +12,7 @@ celery_app = Celery(
         "app.tasks.invoice_tasks",
         "app.tasks.report_tasks",
         "app.tasks.rpa_tasks",
+        "app.tasks.email_tasks",
     ],
 )
 

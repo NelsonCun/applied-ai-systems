@@ -22,6 +22,16 @@ class Settings(BaseSettings):
     rpa_username: str = "robot"
     rpa_password: str = "robot123"
     rpa_evidence_dir: str = "/app/storage/rpa"
+
+    smtp_host: str = "mailhog"
+    smtp_port: int = 1025
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_use_tls: bool = False
+    smtp_timeout_seconds: int = 30
+
+    smtp_from_email: str = "notificaciones@smartinvoice.com"
+    smtp_from_name: str = "SmartInvoice"
     tesseract_language: str = "spa+eng"
     ocr_min_confidence: float = 60
     ocr_dpi: int = 300
