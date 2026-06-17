@@ -8,6 +8,7 @@ import AppLayout from "./components/AppLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 import DashboardPage from "./pages/DashboardPage";
+import InvoicesPage from "./pages/InvoicesPage";
 import LoginPage from "./pages/LoginPage";
 import PlaceholderPage from "./pages/PlaceholderPage";
 import ProvidersPage from "./pages/ProvidersPage";
@@ -45,15 +46,7 @@ export default function App() {
 
         <Route
           path="/invoices"
-          element={
-            <PlaceholderPage
-              title="Facturas"
-              description={
-                "Carga, procesamiento y " +
-                "revisión de documentos."
-              }
-            />
-          }
+          element={<InvoicesPage />}
         />
 
         <Route
