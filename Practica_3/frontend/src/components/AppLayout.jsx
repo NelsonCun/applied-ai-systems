@@ -9,7 +9,6 @@ import {
   PanelLeftClose,
   ReceiptText,
   ScanText,
-  ShieldCheck,
 } from "lucide-react";
 
 import {
@@ -154,14 +153,6 @@ export default function AppLayout() {
         </nav>
 
         <div className="sidebar-footer">
-          <div className="sidebar-security">
-            <ShieldCheck size={18} />
-
-            <div>
-              <strong>Sesión protegida</strong>
-              <span>Autenticación JWT</span>
-            </div>
-          </div>
 
           <button
             className="sidebar-logout"

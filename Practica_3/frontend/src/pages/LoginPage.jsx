@@ -295,15 +295,6 @@ export default function LoginPage() {
             </span>
           </button>
 
-          <div className="login-access-note">
-            <span>Acceso inicial</span>
-
-            <div>
-              <strong>admin</strong>
-              <span>/</span>
-              <strong>Admin123*</strong>
-            </div>
-          </div>
         </form>
       </section>
     </div>
