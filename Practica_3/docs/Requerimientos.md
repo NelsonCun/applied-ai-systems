@@ -42,13 +42,13 @@ SmartInvoice automatiza el procesamiento de facturas digitales desde su carga ha
 | RF-22 | El usuario debe descargar reportes generados. | `/reports/{id}/download`. | Cumplido |
 | RF-23 | El sistema debe registrar facturas en un formulario externo mediante RPA. | Playwright y Chromium. | Cumplido |
 | RF-24 | El sistema debe almacenar estado, resultado y evidencia de la RPA. | `automation_runs` y capturas PNG. | Cumplido |
-| RF-25 | El sistema debe enviar reportes por correo. | SMTP asíncrono con archivo adjunto. | Cumplido |
+| RF-25 | El sistema debe enviar reportes por correo. | SMTP asíncrono autenticado, STARTTLS, archivo adjunto y entrega real validada. | Cumplido |
 | RF-26 | El usuario debe consultar el historial de correos. | Endpoints y pantalla de correos. | Cumplido |
 | RF-27 | El sistema debe mantener una bitácora por etapa. | `processing_logs`: UPLOAD, COMPUTER_VISION, OCR, EXTRACTION y VALIDATION. | Cumplido |
 | RF-28 | El procesamiento pesado debe ejecutarse en segundo plano. | Celery con Redis. | Cumplido |
 | RF-29 | El sistema debe poder procesar al menos 20 facturas de prueba. | Lote `L20A`, resultado 20/20. | Cumplido |
 | RF-30 | El sistema debe poder ejecutarse mediante Docker Compose. | Siete servicios orquestados. | Cumplido |
-| RF-31 | El sistema debe estar disponible mediante una URL pública durante la evaluación. | Requiere completar despliegue en nube. | Pendiente |
+| RF-31 | El sistema debe estar disponible mediante una URL pública durante la evaluación. | Despliegue AWS EC2 accesible mediante IPv4 pública. | Cumplido |
 | RF-32 | El sistema debe permitir administrar usuarios. | Existe modelo, autenticación y roles; no existe CRUD de usuarios en la interfaz. | Parcial |
 
 ## 4. Reglas de negocio
@@ -94,7 +94,7 @@ SmartInvoice automatiza el procesamiento de facturas digitales desde su carga ha
 | RNF-19 | Recuperación | Los datos persistentes deben sobrevivir al reinicio de contenedores. | Volúmenes Docker para PostgreSQL, Redis y RPA target. |
 | RNF-20 | Trazabilidad | Reportes, correos y automatizaciones deben registrar usuario y fechas. | Tablas especializadas y llaves foráneas. |
 | RNF-21 | Calidad | El frontend y backend deben compilar sin errores. | `npm run build` y `compileall` validados. |
-| RNF-22 | Despliegue | La solución debe responder mediante HTTPS y URL pública. | Pendiente de infraestructura pública. |
+| RNF-22 | Despliegue | La solución debe responder mediante HTTPS y URL pública. | URL pública operativa por HTTP; HTTPS pendiente. |
 
 ## 6. Funcionalidades opcionales implementadas
 

@@ -2,9 +2,12 @@
 
 Sistema inteligente para el procesamiento administrativo de facturas digitales mediante **Computer Vision**, **OCR** y **RPA**.
 
-**Curso:** Inteligencia Artificial 1
-**Estudiante:** Nelson Emanuel Cún Bálan  
-**Carné:** 201222010
+| Información | Valor |
+|---|---|
+| Curso | Inteligencia Artificial 1 |
+| Práctica | Práctica 3 |
+| Estudiante | Nelson Emanuel Cún Bálan |
+| Carné | 201222010 |
 
 ## Descripción
 
@@ -59,11 +62,11 @@ flowchart LR
     W --> REP[ReportLab / OpenPyXL / CSV]
     W --> RPA[Playwright]
     RPA --> EXT[Sistema web simulado]
-    W --> SMTP[SMTP / MailHog]
+    W --> SMTP[SMTP real / MailHog en desarrollo]
     W --> FS[(Almacenamiento de archivos)]
 ```
 
-Consulte [Arquitectura](docs/Arquitectura.md) y [Manual técnico](docs/Manual_tecnico.md).
+La descripción ampliada se encuentra en [Arquitectura](docs/Arquitectura.md) y [Manual técnico](docs/Manual_tecnico.md).
 
 ## Tecnologías principales
 
@@ -78,7 +81,7 @@ Consulte [Arquitectura](docs/Arquitectura.md) y [Manual técnico](docs/Manual_te
 | Asociación de proveedor | RapidFuzz y coincidencia exacta de NIT |
 | RPA | Playwright, Chromium |
 | Reportes | ReportLab, OpenPyXL, CSV |
-| Correo | SMTP, MailHog |
+| Correo | SMTP real con STARTTLS; MailHog para desarrollo |
 | Contenedores | Docker, Docker Compose |
 
 ## Requisitos
@@ -113,7 +116,7 @@ curl -s http://localhost:8001/api/v1/health | python3 -m json.tool
 | Frontend | http://localhost:5174 |
 | API | http://localhost:8001 |
 | Swagger | http://localhost:8001/docs |
-| MailHog | http://localhost:8025 |
+| MailHog (desarrollo) | http://localhost:8025 |
 | Sistema RPA simulado | http://localhost:8082 |
 
 Credenciales de desarrollo utilizadas durante la validación:
@@ -123,7 +126,25 @@ Usuario: admin
 Contraseña: Admin123*
 ```
 
-Estas credenciales deben sustituirse en un despliegue real.
+Estas credenciales corresponden al entorno académico de validación. Para un despliegue permanente se contempla su sustitución por credenciales administradas de forma segura.
+
+## Correo en producción
+
+El entorno público fue validado con un servidor SMTP real. Para Gmail se utiliza `smtp.gmail.com`, puerto `587`, autenticación y STARTTLS. La autenticación utiliza una **contraseña de aplicación** en lugar de la contraseña principal de la cuenta.
+
+Las credenciales se almacenan únicamente en `.env.production`, archivo excluido de Git. El ejemplo versionado usa marcadores:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=CORREO_REMITENTE
+SMTP_PASSWORD=CONTRASENA_DE_APLICACION
+SMTP_USE_TLS=true
+SMTP_FROM_EMAIL=CORREO_REMITENTE
+SMTP_FROM_NAME=SmartInvoice
+```
+
+MailHog se conserva como alternativa de desarrollo y no entrega mensajes a buzones externos. La configuración completa se documenta en [Configuración SMTP](docs/Configuracion_SMTP.md).
 
 ## Comandos útiles
 
@@ -197,23 +218,35 @@ docker compose run \
 
 ## Documentación
 
+### Documentos principales
+
+- [Arquitectura y requerimientos](docs/Arquitectura_requerimientos.md)
+- [Patrón de arquitectura](docs/Patron_arquitectura.md)
 - [Manual técnico](docs/Manual_tecnico.md)
-- [Requerimientos](docs/Requerimientos.md)
-- [Arquitectura](docs/Arquitectura.md)
-- [API REST](docs/API_REST.md)
 - [Manual de usuario](docs/Manual_usuario.md)
-- [Guía de demostración](docs/Guia_demostracion.md)
+- [Diagrama entidad-relación](docs/Diagrama_ER.md)
+
+### Anexos técnicos
+
+- [API REST](docs/API_REST.md)
 - [Guía de despliegue](docs/Guia_despliegue.md)
-- [Checklist de entrega](docs/Checklist_entrega.md)
+- [Configuración SMTP](docs/Configuracion_SMTP.md)
+- [Guía de demostración](docs/Guia_demostracion.md)
+- [Matriz de verificación](docs/Checklist_entrega.md)
+- [Resumen de requerimientos](docs/Requerimientos.md)
+- [Resumen de arquitectura](docs/Arquitectura.md)
 
 ## Despliegue público
 
-La aplicación local está validada. La URL pública debe completarse después de desplegar la solución:
+La solución fue desplegada y validada en una instancia EC2:
 
 ```text
-Frontend público: PENDIENTE_DE_DESPLIEGUE
-API pública: PENDIENTE_DE_DESPLIEGUE
+Frontend público: http://44.210.237.133
+API pública: http://44.210.237.133/api/v1
+Swagger: http://44.210.237.133/docs
 ```
+
+La dirección corresponde a la IPv4 pública utilizada durante la validación final. Una nueva asignación de IP requeriría actualizar la configuración CORS y las referencias del entorno.
 
 ## Seguridad
 
@@ -222,8 +255,8 @@ API pública: PENDIENTE_DE_DESPLIEGUE
 - Los archivos se validan por extensión, cabecera binaria y tamaño.
 - Se utiliza SHA-256 para detectar duplicados físicos.
 - La combinación proveedor y número de factura evita duplicados lógicos.
-- `.env` no debe confirmarse en Git.
-- `SECRET_KEY`, contraseñas y credenciales SMTP deben cambiarse en producción.
+- `.env` y `.env.production` se encuentran excluidos del control de versiones.
+- `SECRET_KEY`, contraseñas y credenciales SMTP se administran mediante variables de entorno productivas.
 
 ## Licencia y alcance
 

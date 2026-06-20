@@ -1,169 +1,215 @@
-# Manual de usuario
+# Manual de usuario de SmartInvoice
 
 ## 1. Acceso
 
-Abra:
+### Entorno público
+
+```text
+http://44.210.237.133
+```
+
+### Entorno local
 
 ```text
 http://localhost:5174
 ```
 
-Use las credenciales de desarrollo:
+Credenciales utilizadas durante la validación académica:
 
 ```text
 Usuario: admin
 Contraseña: Admin123*
 ```
 
+![Pantalla de inicio de sesión](./images/01_login.png)
+
 ## 2. Navegación
 
-El menú contiene:
+El menú principal contiene:
 
-- Dashboard
-- Proveedores
-- Facturas
-- Reportes
-- Automatizaciones
-- Correos
+- Dashboard;
+- Proveedores;
+- Facturas;
+- Reportes;
+- Automatizaciones;
+- Correos.
+
+![Menú lateral de navegación](./images/02_menu.png)
 
 ## 3. Dashboard
 
-Muestra:
+El dashboard presenta:
 
 - total de facturas;
-- pendientes y procesadas;
-- rechazadas y duplicadas;
-- monto e impuestos;
+- cantidades por estado;
+- monto e impuestos acumulados;
 - confianza OCR promedio;
 - distribución por estado;
 - proveedores principales;
 - comportamiento mensual.
 
+![Dashboard con métricas clave](./images/03_dashboard.png)
+
 ## 4. Proveedores
 
-### Crear
+### Registro
 
-1. Abra **Proveedores**.
-2. Presione **Nuevo proveedor**.
-3. Complete nombre, NIT, correo, teléfono, dirección y categoría.
-4. Guarde.
+1. Acceder al módulo **Proveedores**.
+2. Seleccionar **Nuevo proveedor**.
+3. Completar nombre, NIT, correo, teléfono, dirección y categoría.
+4. Guardar el registro.
 
-### Editar
+### Edición
 
-1. Localice el proveedor.
-2. Abra la acción de edición.
-3. Modifique los datos.
-4. Guarde.
+1. Localizar el proveedor en el listado.
+2. Seleccionar la acción de edición.
+3. Modificar los datos requeridos.
+4. Guardar los cambios.
 
-### Desactivar
+### Desactivación
 
-Utilice el control de estado. La desactivación es lógica y conserva el historial.
+La opción de estado permite desactivar un proveedor de forma lógica sin eliminar su historial.
+
+![Listado de proveedores con acciones de edición y desactivación](./images/04_proveedores_a.png)
+
+![Formulario de registro y edición de proveedores](./images/04_proveedores_b.png)
 
 ## 5. Facturas
 
 ### Carga individual
 
-1. Abra **Facturas**.
-2. Presione la opción de carga.
-3. Seleccione PDF, JPG, JPEG o PNG.
-4. Opcionalmente seleccione proveedor y categoría.
-5. Confirme.
-6. Espere la actualización automática.
+1. Acceder al módulo **Facturas**.
+2. Seleccionar la opción de carga.
+3. Elegir un archivo PDF, JPG, JPEG o PNG.
+4. Seleccionar proveedor y categoría cuando corresponda.
+5. Confirmar la carga.
+6. Esperar la actualización automática del estado.
 
 ### Carga masiva
 
-1. Seleccione hasta 20 archivos.
-2. Confirme la carga.
-3. Revise el resumen de recibidos, correctos, duplicados y fallidos.
-4. Espere a que finalice el worker.
+1. Seleccionar un máximo de veinte archivos.
+2. Confirmar la operación.
+3. Consultar el resumen de recibidos, correctos, duplicados y fallidos.
+4. Esperar la finalización del worker.
 
 ### Estados
 
 | Estado | Significado |
 |---|---|
-| Pendiente | Almacenada y en cola |
-| Procesando | Worker ejecutando OCR |
-| Procesada | Datos válidos |
-| Rechazada | Requiere corrección |
-| Error | Fallo técnico |
-| Duplicada | Documento o factura ya registrada |
+| Pendiente | Documento almacenado y en cola. |
+| Procesando | Worker ejecutando OCR y validaciones. |
+| Procesada | Datos extraídos y validados. |
+| Rechazada | Documento que requiere corrección manual. |
+| Error | Fallo técnico durante el procesamiento. |
+| Duplicada | Documento o factura registrada previamente. |
 
 ### Detalle
 
-Desde la tabla puede:
+El detalle de una factura permite consultar:
 
-- ver el archivo original;
-- ver la imagen procesada;
-- consultar texto OCR;
-- revisar confianza;
-- consultar campos;
-- consultar bitácora;
-- reprocesar;
-- corregir.
+- archivo original;
+- imagen preprocesada;
+- texto OCR;
+- confianza;
+- campos extraídos;
+- proveedor asociado;
+- errores de validación;
+- bitácora de procesamiento.
 
 ### Revisión manual
 
-1. Abra una factura rechazada.
-2. Seleccione **Revisar**.
-3. Corrija número, fecha, proveedor, categoría, NIT y montos.
-4. Compruebe que subtotal + IVA = total.
-5. Guarde.
-6. La factura quedará procesada si supera las validaciones.
+1. Acceder al detalle de una factura rechazada.
+2. Seleccionar **Revisar**.
+3. Corregir número, fecha, proveedor, categoría, NIT y montos.
+4. Verificar la igualdad entre subtotal, IVA y total.
+5. Guardar la revisión.
+
+La factura cambia a procesada cuando los datos corregidos cumplen las reglas de validación.
+
+![Detalle de factura con opción de revisión manual](./images/05_facturas_a.png)
+
+![Formulario de revisión manual con validaciones en tiempo real](./images/05_facturas_b.png)
 
 ## 6. Reportes
 
-1. Abra **Reportes**.
-2. Presione **Nuevo reporte**.
-3. Seleccione tipo.
-4. Seleccione PDF, XLSX o CSV.
-5. Configure filtros.
-6. Genere.
-7. Espere estado **Correcto**.
-8. Descargue o envíe por correo.
+1. Acceder al módulo **Reportes**.
+2. Seleccionar **Nuevo reporte**.
+3. Elegir el tipo de reporte.
+4. Seleccionar PDF, XLSX o CSV.
+5. Configurar los filtros requeridos.
+6. Iniciar la generación.
+7. Esperar el estado **Correcto**.
+8. Descargar el archivo o enviarlo por correo.
+
+Las fechas del formulario filtran por fecha de factura. Los campos vacíos incluyen todos los registros disponibles.
+
+![Formulario de generación de reportes con filtros configurables](./images/06_reportes.png)
 
 ## 7. Automatizaciones RPA
 
-1. Abra **Automatizaciones**.
-2. Presione **Nueva ejecución**.
-3. Seleccione una factura procesada.
-4. Ejecute.
-5. Espere estado **Correcto**.
-6. Abra el detalle.
-7. Descargue la captura de evidencia.
+1. Acceder a **Automatizaciones**.
+2. Seleccionar **Nueva ejecución**.
+3. Elegir una factura procesada.
+4. Iniciar la automatización.
+5. Esperar el estado **Correcto**.
+6. Consultar el detalle.
+7. Descargar la captura de evidencia.
+
+![Listado de ejecuciones RPA con acciones de detalle](./images/07_automatizaciones.png)
 
 ## 8. Correos
 
-1. Abra **Correos**.
-2. Consulte destinatario, asunto, reporte y estado.
-3. Abra el detalle para ver cuerpo y datos SMTP.
-4. Descargue el adjunto.
-5. Use **Abrir MailHog** para consultar el buzón de desarrollo.
+1. Generar previamente un reporte con estado `SUCCESS`.
+2. Seleccionar la opción **Enviar por correo**.
+3. Registrar una dirección de destinatario válida.
+4. Confirmar el envío.
+5. Consultar destinatario, asunto, reporte y estado en el módulo **Correos**.
+6. Abrir el detalle para visualizar cuerpo, adjunto y resultado SMTP.
+7. Comprobar la recepción en el buzón del destinatario.
 
-## 9. Cerrar sesión
+En producción, los mensajes se entregan mediante SMTP real. MailHog se utiliza únicamente en el entorno local de desarrollo.
 
-Presione **Cerrar sesión** al final del menú lateral.
+![Detalle de correo con resultado SMTP](./images/08_correos.png)
+
+## 9. Cierre de sesión
+
+La opción **Cerrar sesión**, ubicada en el menú lateral, elimina la sesión activa del navegador.
 
 ## 10. Problemas frecuentes
 
-### No se conecta al servidor
+### Falta de conexión con el servidor
 
 ```bash
 docker compose ps
 curl -s http://localhost:8001/api/v1/health
 ```
 
-### Una factura queda rechazada
+### Factura rechazada
 
-Abra OCR y revise `validation_errors`. Luego use revisión manual.
+El detalle OCR y `validation_errors` permiten identificar los datos que requieren revisión manual.
 
-### El reporte no descarga
+### Reporte sin registros
 
-Espere hasta que el estado sea `SUCCESS`.
+Los filtros de fecha, proveedor o estado pueden excluir todas las facturas. Un reporte general utiliza los filtros vacíos.
 
-### La RPA no inicia
+### Reporte no disponible
 
-Compruebe que la factura esté `PROCESSED` y que `rpa-target` esté saludable.
+La descarga se habilita únicamente cuando el estado del reporte es `SUCCESS`.
 
-### El correo no aparece
+### RPA no disponible
 
-Revise el estado y abra MailHog en `http://localhost:8025`.
+La ejecución requiere una factura en estado `PROCESSED` y un servicio `rpa-target` saludable.
+
+### Correo no recibido
+
+El historial de **Correos** indica si el envío fue correcto o fallido. Cuando el estado es correcto, también corresponde revisar la carpeta de spam y la validez de la dirección del destinatario.
+
+Cuando el estado es error, las variables relevantes son:
+
+```text
+SMTP_HOST
+SMTP_PORT
+SMTP_USERNAME
+SMTP_PASSWORD
+SMTP_USE_TLS
+```

@@ -30,7 +30,8 @@ flowchart TB
 
     subgraph AUXILIARES["Servicios auxiliares"]
         TARGET["Sistema web simulado"]
-        MAILHOG["MailHog"]
+        SMTP_PROVIDER["Proveedor SMTP real"]
+        MAILHOG["MailHog opcional"]
     end
 
     USER --> FE
@@ -50,4 +51,5 @@ flowchart TB
     WORKER --> FILES
     RPABOT --> TARGET
     TARGET --> SQLITE
-    EMAIL --> MAILHOG
+    EMAIL --> SMTP_PROVIDER
+    EMAIL -. desarrollo .-> MAILHOG

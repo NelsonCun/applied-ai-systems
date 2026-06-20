@@ -60,7 +60,8 @@ flowchart TB
 
     subgraph EXTERNAL["Servicios auxiliares"]
         TARGET[Sistema web RPA simulado]
-        MAILHOG[MailHog]
+        SMTP_PROVIDER[Proveedor SMTP real]
+        MAILHOG[MailHog opcional]
     end
 
     USER --> FE
@@ -80,7 +81,8 @@ flowchart TB
     WORKER --> FILES
     RPABOT --> TARGET
     TARGET --> SQLITE
-    EMAIL --> MAILHOG
+    EMAIL --> SMTP_PROVIDER
+    EMAIL -. desarrollo .-> MAILHOG
 ```
 
 ## 4. Contenedores
@@ -93,9 +95,10 @@ flowchart TB
 | `db` | PostgreSQL 16 | 5433 |
 | `redis` | Broker y backend de resultados | 6379 |
 | `rpa-target` | Formulario externo simulado | 8082 |
-| `mailhog` | SMTP y buzón de desarrollo | 1025 / 8025 |
+| `mailhog` | SMTP y buzón opcional de desarrollo | 1025 / 8025 |
+| Proveedor SMTP externo | Entrega real de mensajes en producción | 587/TLS saliente |
 
-Todos los servicios comparten `smartinvoice-network`.
+Todos los contenedores internos comparten `smartinvoice-network`; el proveedor SMTP se consume como servicio externo.
 
 ## 5. Flujo principal
 
@@ -216,9 +219,9 @@ Una factura con errores queda `REJECTED`, pero conserva OCR, imagen procesada y 
 
 Se incluye un sistema externo simulado. Playwright inicia sesión, llena el formulario, verifica el éxito y toma una captura.
 
-### D-06: MailHog en desarrollo
+### D-06: SMTP real en producción y MailHog en desarrollo
 
-Permite demostrar SMTP y adjuntos sin enviar mensajes reales. En producción debe sustituirse por un servidor SMTP real.
+MailHog permite inspeccionar mensajes y adjuntos durante el desarrollo, pero no entrega a buzones externos. En producción el worker se conecta a un proveedor SMTP autenticado mediante STARTTLS y registra el resultado en PostgreSQL.
 
 ## 9. Escalabilidad
 
@@ -237,5 +240,5 @@ La arquitectura permite:
 - No hay scheduler funcional, aunque existe esquema de soporte.
 - No hay pruebas unitarias automatizadas.
 - El almacenamiento de documentos es local.
-- El despliegue público aún debe completarse.
-- MailHog es un servicio de demostración, no de entrega real.
+- El despliegue público por HTTP está operativo; HTTPS queda pendiente.
+- MailHog no realiza entrega externa y se limita al entorno de desarrollo.

@@ -1,168 +1,243 @@
-# Guía de despliegue
+# Guía de despliegue de SmartInvoice
 
-## 1. Estado
+## 1. Objetivo
 
-La ejecución local está completa y validada. La publicación en nube y las URL públicas deben completarse antes de la evaluación.
+Este documento describe la infraestructura, configuración y secuencia empleadas para desplegar SmartInvoice en AWS EC2 mediante Docker Compose.
 
-## 2. Topología recomendada
+## 2. Estado del despliegue
 
-Para la práctica puede usarse una VM Linux:
+La solución fue desplegada y validada en una instancia AWS EC2 con Ubuntu Server 24.04 LTS.
+
+```text
+Frontend: http://44.210.237.133
+API: http://44.210.237.133/api/v1
+Swagger: http://44.210.237.133/docs
+```
+
+La dirección corresponde a la IPv4 pública utilizada durante la validación final. Una asignación diferente de IP requiere actualizar `CORS_ORIGINS` y las referencias documentales del entorno.
+
+## 3. Infraestructura utilizada
+
+| Recurso | Configuración validada |
+|---|---|
+| Proveedor | AWS EC2 |
+| Sistema operativo | Ubuntu Server 24.04 LTS x86_64 |
+| Procesador | 2 vCPU |
+| Memoria | 4 GiB |
+| Swap | 2 GiB |
+| Almacenamiento | 30 GiB EBS gp3 |
+| Exposición pública | Puertos 22 y 80 |
+| Orquestación | Docker Compose |
+| Acceso al repositorio | Deploy Key SSH de solo lectura |
+
+La capacidad seleccionada soportó PostgreSQL, Redis, FastAPI, Celery, Tesseract, OpenCV, Chromium, Nginx y el servicio RPA dentro de una misma máquina virtual.
+
+## 4. Topología
 
 ```text
 Internet
    |
-HTTPS / proxy inverso
+Puerto 80
    |
-VM Linux con Docker Compose
-   |-- frontend
-   |-- backend
-   |-- worker
+Nginx
+   |-- /          -> frontend React
+   |-- /api/      -> FastAPI
+   |-- /docs      -> Swagger
+   |
+Red Docker privada
    |-- PostgreSQL
    |-- Redis
-   |-- rpa-target
-   `-- SMTP o MailHog restringido
+   |-- Celery Worker
+   |-- RPA Target
+   |-- MailHog (solo desarrollo)
+   `-- SMTP externo
 ```
 
-## 3. Requisitos de la VM
+PostgreSQL, Redis, backend, RPA Target y MailHog no se publican directamente en Internet.
 
-Recomendación mínima:
+## 5. Servicios productivos
 
-- Ubuntu 22.04 o 24.04;
-- 2 vCPU;
-- 4 GB de RAM;
-- 30 GB de almacenamiento;
-- IP pública;
-- puertos 80 y 443 abiertos;
-- acceso SSH restringido.
+| Servicio | Función | Exposición |
+|---|---|---|
+| `frontend` | Nginx y aplicación React compilada | Puerto 80 público |
+| `backend` | API REST FastAPI | Red Docker |
+| `worker` | OCR, reportes, RPA y correo | Red Docker |
+| `db` | PostgreSQL 16 | Red Docker |
+| `redis` | Broker y backend de resultados | Red Docker |
+| `rpa-target` | Sistema externo simulado | Red Docker |
+| `mailhog` | Captura SMTP de desarrollo | `127.0.0.1:8025` |
 
-OCR y Chromium pueden consumir memoria. Una instancia de 1 GB no es recomendable.
+## 6. Obtención del código
 
-## 4. Preparación
+El repositorio privado se clonó mediante una Deploy Key SSH de solo lectura.
 
 ```bash
-sudo apt update
-sudo apt install -y git ca-certificates curl
+git clone \
+  --branch practica_3 \
+  --single-branch \
+  git@github.com:NelsonCun/-IA1-_VACASJUN2026_NelsonCun_201222010.git
+
+cd \
+  ./-IA1-_VACASJUN2026_NelsonCun_201222010/Practica_3
 ```
 
-Instale Docker Engine y el complemento Compose según el proveedor.
+## 7. Preparación de la instancia
 
-Compruebe:
+El script `scripts/bootstrap_ec2.sh` instala Docker Engine, Docker Compose y las dependencias básicas, además de crear un archivo swap de 2 GiB.
 
 ```bash
-docker --version
-docker compose version
+./scripts/bootstrap_ec2.sh
 ```
 
-## 5. Obtener el proyecto
+Redis utiliza la siguiente configuración del kernel:
 
 ```bash
-git clone git@github.com:NelsonCun/-IA1-_VACASJUN2026_NelsonCun_201222010.git
-cd ./-IA1-_VACASJUN2026_NelsonCun_201222010
-git checkout practica_3
-cd Practica_3
+echo 'vm.overcommit_memory=1' \
+  | sudo tee \
+    /etc/sysctl.d/98-smartinvoice-redis.conf
+
+sudo sysctl --system
 ```
 
-## 6. Variables de producción
+## 8. Configuración de producción
+
+El archivo `.env.production` se genera a partir de la IP pública y permanece fuera del control de versiones.
 
 ```bash
-cp .env.example .env
-nano .env
+./scripts/create_prod_env.sh EC2_PUBLIC_IP
+
+chmod 600 .env.production
 ```
 
-Cambie obligatoriamente:
+Las variables principales incluyen:
 
+- `DATABASE_URL`;
+- `REDIS_URL`;
+- `CELERY_BROKER_URL`;
+- `CELERY_RESULT_BACKEND`;
 - `SECRET_KEY`;
-- `POSTGRES_PASSWORD`;
-- `RPA_PASSWORD`;
 - `CORS_ORIGINS`;
-- `VITE_API_URL`;
-- credenciales SMTP;
-- remitente SMTP.
+- `RPA_TARGET_URL`;
+- variables SMTP;
+- directorios de almacenamiento.
 
-Generar secreto:
+## 9. Configuración SMTP productiva
+
+El entorno público utiliza Gmail SMTP con autenticación y STARTTLS:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=CORREO_REMITENTE
+SMTP_PASSWORD=CONTRASENA_DE_APLICACION
+SMTP_USE_TLS=true
+SMTP_TIMEOUT_SECONDS=30
+SMTP_FROM_EMAIL=CORREO_REMITENTE
+SMTP_FROM_NAME=SmartInvoice
+```
+
+La credencial corresponde a una contraseña de aplicación asociada a una cuenta con verificación en dos pasos. El archivo `.env.production.example` conserva únicamente marcadores y no contiene secretos reales.
+
+La configuración detallada se encuentra en [Configuración SMTP](Configuracion_SMTP.md).
+
+## 10. Construcción y arranque
+
+El despliegue se ejecuta mediante:
 
 ```bash
-openssl rand -hex 48
+./scripts/deploy_prod.sh
 ```
 
-## 7. Ajustes necesarios
+Este proceso realiza las siguientes operaciones:
 
-El Compose local expone puertos de desarrollo y usa `localhost` para el frontend. Antes del despliegue se debe crear una variante de producción que:
+1. validación de `docker-compose.prod.yml`;
+2. descarga de imágenes base;
+3. construcción de backend, frontend y RPA Target;
+4. creación de red y volúmenes;
+5. inicio de los siete servicios;
+6. espera del endpoint de salud;
+7. presentación del estado final.
 
-- use la URL pública de API;
-- no exponga PostgreSQL ni Redis a Internet;
-- sirva el frontend con Nginx;
-- mantenga `backend`, `db`, `redis` y `worker` en red privada;
-- publique únicamente 80/443;
-- configure almacenamiento persistente;
-- aplique reinicio automático;
-- use HTTPS.
+## 11. Verificación del despliegue
 
-## 8. Arranque
+El estado de los servicios se valida con:
 
 ```bash
-docker compose up -d --build
-docker compose ps
+docker compose \
+  --env-file .env.production \
+  -f docker-compose.prod.yml \
+  ps
+
+./scripts/check_prod.sh
 ```
 
-## 9. Validación
+El endpoint principal de salud es:
 
 ```bash
-curl -fsS http://127.0.0.1:8001/api/v1/health
-docker compose exec frontend npm run build
-docker compose exec backend python -m compileall app
+curl -fsS \
+  http://127.0.0.1/api/v1/health \
+  | python3 -m json.tool
 ```
 
-Pruebe:
+La respuesta validada fue:
 
-- login;
-- carga;
-- OCR;
-- reporte;
-- RPA;
-- correo.
-
-## 10. Firewall
-
-Ejemplo con UFW:
-
-```bash
-sudo ufw allow OpenSSH
-sudo ufw allow 80/tcp
-sudo ufw allow 443/tcp
-sudo ufw enable
+```json
+{
+  "status": "healthy",
+  "application": "SmartInvoice",
+  "environment": "production",
+  "services": {
+    "database": "available",
+    "redis": "available"
+  }
+}
 ```
 
-No publique:
+Celery también fue validado mediante `inspect ping`, con respuesta `pong` del worker.
 
-- 5432/5433;
-- 6379;
-- 1025;
-- panel MailHog sin autenticación.
+## 12. Validación funcional en nube
 
-## 11. HTTPS
+El despliegue público fue verificado con los siguientes casos:
 
-Use Nginx o Caddy. Las URLs finales deben anotarse aquí:
+- acceso al frontend desde Internet;
+- autenticación administrativa;
+- carga de facturas;
+- ejecución de Computer Vision y OCR;
+- consulta de bitácora;
+- generación y descarga de reportes;
+- automatización RPA con evidencia;
+- envío de reportes a un correo real;
+- persistencia de datos en volúmenes Docker.
 
-```text
-Frontend: PENDIENTE_DE_DESPLIEGUE
-API: PENDIENTE_DE_DESPLIEGUE
-Swagger: PENDIENTE_DE_DESPLIEGUE
-```
+## 13. Seguridad de red
 
-## 12. Persistencia y respaldo
+El Security Group permite únicamente:
 
-Respaldo de PostgreSQL:
+| Puerto | Uso |
+|---:|---|
+| 22 | Administración SSH restringida |
+| 80 | Aplicación web pública |
 
-```bash
-docker compose exec -T db \
-  pg_dump \
-  -U smartinvoice_user \
-  -d smartinvoice \
-  > backup_smartinvoice.sql
-```
+Los siguientes puertos permanecen sin exposición pública:
 
-Respalde también:
+- PostgreSQL: `5432`;
+- Redis: `6379`;
+- backend: `8000`;
+- RPA Target: `8080`;
+- SMTP de desarrollo: `1025`;
+- interfaz MailHog: `8025`.
+
+El envío SMTP utiliza una conexión saliente desde el worker hacia el puerto 587 del proveedor externo.
+
+## 14. Persistencia
+
+La solución utiliza volúmenes Docker para:
+
+- PostgreSQL;
+- Redis;
+- base de datos del RPA Target.
+
+Los documentos y resultados se almacenan en:
 
 ```text
 storage/uploads
@@ -171,32 +246,55 @@ storage/reports
 storage/rpa
 ```
 
-## 13. Actualización
+Un respaldo lógico de PostgreSQL puede generarse con:
 
 ```bash
-git pull origin practica_3
-docker compose up -d --build
-docker compose ps
+docker compose \
+  --env-file .env.production \
+  -f docker-compose.prod.yml \
+  exec -T db \
+  sh -lc '
+    pg_dump \
+      -U "$POSTGRES_USER" \
+      -d "$POSTGRES_DB"
+  ' \
+  > backup_smartinvoice.sql
 ```
 
-## 14. Diagnóstico
+## 15. Actualización del despliegue
+
+La actualización del código utiliza la rama `practica_3`:
 
 ```bash
-docker compose logs --tail=200 backend
-docker compose logs --tail=200 worker
-docker compose logs --tail=200 frontend
-docker compose logs --tail=200 rpa-target
+git pull --ff-only origin practica_3
+
+docker compose \
+  --env-file .env.production \
+  -f docker-compose.prod.yml \
+  up -d --build
 ```
 
-## 15. Criterio de aceptación
+Los cambios exclusivamente documentales no requieren reconstrucción de contenedores.
 
-El despliegue está listo cuando:
+## 16. Diagnóstico
 
-- la URL pública abre el login;
-- el health endpoint responde 200;
-- la API accede a PostgreSQL y Redis;
-- el worker procesa una factura;
-- el reporte descarga;
-- la RPA produce evidencia;
-- el correo llega al SMTP configurado;
-- los datos sobreviven a un reinicio.
+Los registros principales se consultan mediante:
+
+```bash
+docker compose \
+  --env-file .env.production \
+  -f docker-compose.prod.yml \
+  logs \
+  --tail=200 \
+  backend worker frontend rpa-target
+```
+
+Los recursos de la instancia se verifican con:
+
+```bash
+free -h
+
+df -h /
+
+docker stats --no-stream
+```

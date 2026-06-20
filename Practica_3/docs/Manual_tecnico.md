@@ -86,7 +86,13 @@ Practica_3/
 - Recharts.
 - Lucide React.
 
-## 5. Configuración
+## 5. Arquitectura general
+
+![Diagrama de arquitectura](./diagramas/Diagrama_arquitectura.png)
+
+La descripción detallada del patrón y las responsabilidades se encuentra en [Patrón de arquitectura](Patron_arquitectura.md).
+
+## 6. Configuración
 
 La aplicación usa variables de entorno.
 
@@ -105,11 +111,17 @@ La aplicación usa variables de entorno.
 | `OCR_DPI` | Renderizado PDF | 300 |
 | `MAX_PDF_PAGES` | Máximo de páginas | 5 |
 | `RPA_TARGET_URL` | Destino RPA | `http://rpa-target:8080` |
-| `SMTP_HOST` | SMTP | `mailhog` |
+| `SMTP_HOST` | Servidor SMTP | `mailhog` en desarrollo; `smtp.gmail.com` en producción |
+| `SMTP_PORT` | Puerto SMTP | `1025` en desarrollo; `587` con STARTTLS |
+| `SMTP_USERNAME` | Usuario SMTP | vacío en MailHog; cuenta remitente en producción |
+| `SMTP_PASSWORD` | Credencial SMTP | vacía en MailHog; contraseña de aplicación en producción |
+| `SMTP_USE_TLS` | Habilita STARTTLS | `false` en desarrollo; `true` en producción |
+| `SMTP_FROM_EMAIL` | Dirección remitente | dirección técnica o cuenta remitente |
+| `SMTP_FROM_NAME` | Nombre visible | SmartInvoice |
 | `VITE_API_URL` | URL de API para frontend | localhost en desarrollo |
-| `CORS_ORIGINS` | Orígenes permitidos | frontend local |
+| `CORS_ORIGINS` | Orígenes permitidos | frontend local o IP pública |
 
-## 6. Autenticación y autorización
+## 7. Autenticación y autorización
 
 ### 6.1 Contraseñas
 
@@ -136,7 +148,7 @@ La base define:
 
 Las operaciones de modificación de proveedores requieren administrador. Las demás rutas administrativas requieren autenticación.
 
-## 7. Carga de facturas
+## 8. Carga de facturas
 
 ### 7.1 Validaciones
 
@@ -163,7 +175,7 @@ El servicio de carga:
 | `.jpeg` | `image/jpeg` |
 | `.png` | `image/png` |
 
-## 8. Computer Vision
+## 9. Computer Vision
 
 ### 8.1 Carga
 
@@ -185,7 +197,7 @@ La secuencia es:
 
 Se registran ancho, alto y ángulo de corrección.
 
-## 9. OCR
+## 10. OCR
 
 Tesseract se ejecuta con:
 
@@ -199,7 +211,7 @@ El motor devuelve:
 - confianza promedio;
 - cantidad de palabras reconocidas.
 
-## 10. Extracción estructurada
+## 11. Extracción estructurada
 
 El parser normaliza saltos, guiones y espacios. Luego extrae:
 
@@ -214,14 +226,14 @@ El parser normaliza saltos, guiones y espacios. Luego extrae:
 
 Los montos toleran coma o punto decimal.
 
-## 11. Asociación de proveedor
+## 12. Asociación de proveedor
 
 1. Busca coincidencia exacta por NIT.
 2. Si no existe, aplica `partial_ratio` de RapidFuzz contra el texto OCR.
 3. Acepta la mejor coincidencia con puntaje mínimo de 75.
 4. Hereda la categoría del proveedor cuando no fue seleccionada.
 
-## 12. Validaciones
+## 13. Validaciones
 
 Una factura queda rechazada cuando:
 
@@ -233,7 +245,7 @@ Una factura queda rechazada cuando:
 
 Una factura queda duplicada cuando existe otra no duplicada con igual proveedor y número.
 
-## 13. Estados
+## 14. Estados
 
 ### Factura
 
@@ -264,7 +276,7 @@ Una factura queda duplicada cuando existe otra no duplicada con igual proveedor 
 - `REPORT`
 - `EMAIL`
 
-## 14. Revisión manual
+## 15. Revisión manual
 
 El operador puede corregir una factura no duplicada. El backend valida nuevamente:
 
@@ -278,7 +290,7 @@ El operador puede corregir una factura no duplicada. El backend valida nuevament
 
 La revisión se registra en `extracted_data.manual_review`, limpia errores y cambia el estado a `PROCESSED`.
 
-## 15. Procesamiento asíncrono
+## 16. Procesamiento asíncrono
 
 Celery registra las tareas:
 
@@ -290,7 +302,7 @@ Celery registra las tareas:
 
 La tarea de facturas reintenta únicamente errores transitorios de conexión, no errores deterministas de validación.
 
-## 16. Reportes
+## 17. Reportes
 
 Tipos:
 
@@ -314,7 +326,7 @@ Filtros:
 
 El reporte se genera en segundo plano y solo puede descargarse en estado `SUCCESS`.
 
-## 17. RPA
+## 18. RPA
 
 El worker usa Playwright con Chromium en modo headless.
 
@@ -331,7 +343,7 @@ Flujo:
 9. guarda captura PNG;
 10. persiste resultado y estado.
 
-## 18. Correo
+## 19. Correo
 
 El correo se crea en estado `PENDING`. El worker:
 
@@ -343,9 +355,13 @@ El correo se crea en estado `PENDING`. El worker:
 6. envía;
 7. registra `Message-ID` y `SUCCESS`.
 
-MailHog se usa para desarrollo.
+En desarrollo puede utilizarse MailHog para inspeccionar mensajes sin enviarlos a Internet. En producción se configuró un servidor SMTP real con autenticación y STARTTLS. Para Gmail se usan `smtp.gmail.com`, puerto `587`, la cuenta remitente y una contraseña de aplicación.
 
-## 19. Base de datos
+Las credenciales viven únicamente en `.env.production`, que está excluido del repositorio. El worker conserva el destinatario solicitado, adjunta el archivo del reporte y registra el `Message-ID`, estado, fecha y errores en `email_logs`.
+
+## 20. Base de datos
+
+![Diagrama entidad-relación](./diagramas/Diagrama_ER.png)
 
 Tablas funcionales principales:
 
@@ -381,11 +397,11 @@ Vistas:
 - estado y fechas;
 - relaciones de reportes y correos.
 
-## 20. API REST
+## 21. API REST
 
-La API expone Swagger en `/docs`. Consulte [API_REST.md](API_REST.md).
+La API expone Swagger en `/docs`. La especificación detallada de endpoints se encuentra en [API_REST.md](API_REST.md).
 
-## 21. Frontend
+## 22. Frontend
 
 Rutas:
 
@@ -401,7 +417,7 @@ Rutas:
 
 Axios agrega JWT automáticamente y elimina la sesión cuando recibe 401.
 
-## 22. Docker Compose
+## 23. Docker Compose
 
 Servicios:
 
@@ -424,7 +440,7 @@ Volúmenes:
 
 El directorio `storage` se monta en backend y worker.
 
-## 23. Instalación
+## 24. Instalación
 
 ```bash
 cp .env.example .env
@@ -440,27 +456,27 @@ docker compose exec frontend npm run build
 docker compose exec backend python -m compileall app
 ```
 
-## 24. Lote de 20 facturas
+## 25. Lote de 20 facturas
 
 El lote `samples/batch_20` contiene 20 documentos y resultados esperados. La validación ejecutada produjo 20 estados `PROCESSED`.
 
-## 25. Despliegue
+## 26. Despliegue
 
-La solución está preparada para ejecutarse en una VM Linux con Docker Compose. Antes de publicar se requiere:
+La solución fue desplegada en una VM Linux con Docker Compose. La configuración productiva considera:
 
 - variables de producción;
 - `SECRET_KEY` fuerte;
-- SMTP real o MailHog restringido;
+- SMTP real con credenciales externas;
 - URL pública de API;
 - CORS público;
 - almacenamiento persistente;
 - firewall;
 - proxy inverso;
-- HTTPS.
+- HTTPS cuando se disponga de dominio o certificado.
 
-Consulte [Guia_despliegue.md](Guia_despliegue.md).
+La infraestructura y el procedimiento aplicado se describen en [Guia_despliegue.md](Guia_despliegue.md).
 
-## 26. Mejoras futuras
+## 27. Mejoras futuras
 
 - CRUD de usuarios.
 - pruebas unitarias e integración;
@@ -474,5 +490,5 @@ Consulte [Guia_despliegue.md](Guia_despliegue.md).
 - observabilidad con métricas;
 - rotación de secretos;
 - alta disponibilidad;
-- SMTP real;
+- servicio SMTP transaccional dedicado para mayor volumen;
 - migraciones versionadas.
