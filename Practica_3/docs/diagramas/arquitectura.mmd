@@ -1,0 +1,55 @@
+flowchart TB
+    USER["Usuario administrativo"]
+
+    subgraph PRESENTACION["Capa de presentación"]
+        FE["Frontend React + Vite"]
+    end
+
+    subgraph BACKEND["Backend Python"]
+        API["API REST FastAPI"]
+        AUTH["JWT + bcrypt"]
+        SERVICES["Servicios de aplicación"]
+        REPOSITORIES["Repositorios Psycopg"]
+    end
+
+    subgraph ASINCRONO["Procesamiento asíncrono"]
+        REDIS[("Redis")]
+        WORKER["Celery Worker"]
+        CV["OpenCV + PyMuPDF"]
+        OCR["Tesseract OCR"]
+        REPORTS["ReportLab + OpenPyXL + CSV"]
+        RPABOT["Playwright + Chromium"]
+        EMAIL["SMTP"]
+    end
+
+    subgraph PERSISTENCIA["Persistencia"]
+        POSTGRES[("PostgreSQL")]
+        FILES[("Archivos")]
+        SQLITE[("SQLite RPA")]
+    end
+
+    subgraph AUXILIARES["Servicios auxiliares"]
+        TARGET["Sistema web simulado"]
+        SMTP_PROVIDER["Proveedor SMTP real"]
+        MAILHOG["MailHog opcional"]
+    end
+
+    USER --> FE
+    FE --> API
+    API --> AUTH
+    API --> SERVICES
+    SERVICES --> REPOSITORIES
+    REPOSITORIES --> POSTGRES
+    API --> REDIS
+    REDIS --> WORKER
+    WORKER --> CV
+    CV --> OCR
+    WORKER --> REPORTS
+    WORKER --> RPABOT
+    WORKER --> EMAIL
+    WORKER --> POSTGRES
+    WORKER --> FILES
+    RPABOT --> TARGET
+    TARGET --> SQLITE
+    EMAIL --> SMTP_PROVIDER
+    EMAIL -. desarrollo .-> MAILHOG

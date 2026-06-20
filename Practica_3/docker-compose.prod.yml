@@ -1,0 +1,129 @@
+name: smartinvoice
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: smartinvoice-db
+    restart: unless-stopped
+    env_file: [.env.production]
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d:ro
+    expose: ["5432"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks: [smartinvoice-network]
+
+  redis:
+    image: redis:7-alpine
+    container_name: smartinvoice-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redis_data:/data]
+    expose: ["6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 15
+    networks: [smartinvoice-network]
+
+  rpa-target:
+    build:
+      context: ./rpa-target
+      dockerfile: Dockerfile
+      args:
+        APP_UID: ${LOCAL_UID:-1000}
+        APP_GID: ${LOCAL_GID:-1000}
+    image: smartinvoice-rpa-target:prod
+    container_name: smartinvoice-rpa-target
+    restart: unless-stopped
+    env_file: [.env.production]
+    environment:
+      RPA_DATABASE_PATH: /data/rpa_target.db
+    volumes: [rpa_target_data:/data]
+    expose: ["8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8080/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 15s
+    networks: [smartinvoice-network]
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      args:
+        APP_UID: ${LOCAL_UID:-1000}
+        APP_GID: ${LOCAL_GID:-1000}
+    image: smartinvoice-backend:prod
+    container_name: smartinvoice-backend
+    restart: unless-stopped
+    env_file: [.env.production]
+    volumes: [./storage:/app/storage]
+    expose: ["8000"]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/api/v1/health > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 30s
+    networks: [smartinvoice-network]
+
+  worker:
+    image: smartinvoice-backend:prod
+    container_name: smartinvoice-worker
+    restart: unless-stopped
+    command: ["celery", "-A", "app.tasks.celery_app.celery_app", "worker", "--loglevel=info", "--concurrency=1", "--prefetch-multiplier=1", "--max-tasks-per-child=10"]
+    env_file: [.env.production]
+    volumes: [./storage:/app/storage]
+    depends_on:
+      db: {condition: service_healthy}
+      redis: {condition: service_healthy}
+      rpa-target: {condition: service_healthy}
+      backend: {condition: service_healthy}
+    networks: [smartinvoice-network]
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: smartinvoice-mailhog
+    restart: unless-stopped
+    expose: ["1025", "8025"]
+    ports: ["127.0.0.1:8025:8025"]
+    networks: [smartinvoice-network]
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile.prod
+      args:
+        VITE_API_URL: /api/v1
+    image: smartinvoice-frontend:prod
+    container_name: smartinvoice-frontend
+    restart: unless-stopped
+    ports: ["80:80"]
+    depends_on:
+      backend: {condition: service_healthy}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1/healthz > /dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+      start_period: 10s
+    networks: [smartinvoice-network]
+
+volumes:
+  postgres_data:
+  redis_data:
+  rpa_target_data:
+
+networks:
+  smartinvoice-network:
+    driver: bridge
