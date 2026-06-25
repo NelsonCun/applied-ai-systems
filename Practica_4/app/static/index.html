@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="RoboMaze: creación de laberintos y comparación de algoritmos BFS, DFS y A*."
+    >
+
+    <title>RoboMaze</title>
+
+    <link
+        rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='18' fill='%23245f53'/%3E%3Cpath d='M24 24h52v52H24zM24 48h36M48 24v24M60 48v28' fill='none' stroke='white' stroke-width='8'/%3E%3C/svg%3E"
+    >
+
+    <link
+        rel="stylesheet"
+        href="/static/css/styles.css"
+    >
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="brand">
+            <div class="brand__mark" aria-hidden="true">
+                <svg
+                    viewBox="0 0 24 24"
+                    focusable="false"
+                >
+                    <path d="M4 4h16v16H4z"></path>
+                    <path d="M4 9h6V4"></path>
+                    <path d="M10 9h5v6h5"></path>
+                    <path d="M4 15h6v5"></path>
+                    <path d="M15 15v5"></path>
+                </svg>
+            </div>
+
+            <div>
+                <p class="eyebrow">Visualizador de búsqueda</p>
+                <h1>RoboMaze</h1>
+            </div>
+        </div>
+
+        <div
+            id="api-status"
+            class="api-status api-status--checking"
+            role="status"
+        >
+            <span class="api-status__indicator"></span>
+            <span id="api-status-text">Verificando servicio</span>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <aside class="panel controls-panel">
+            <section class="control-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Escenarios</p>
+                    <h2>Laberintos</h2>
+                </div>
+
+                <label class="field">
+                    <span>Laberinto predefinido</span>
+
+                    <select id="maze-select">
+                        <option value="">
+                            Cargando escenarios...
+                        </option>
+                    </select>
+                </label>
+
+                <button
+                    id="load-maze-button"
+                    class="button button--secondary requires-idle"
+                    type="button"
+                >
+                    Abrir escenario
+                </button>
+
+                <p id="maze-description" class="field-help">
+                    Seleccione uno de los escenarios disponibles.
+                </p>
+            </section>
+
+            <section class="control-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Dimensiones</p>
+                    <h2>Tamaño</h2>
+                </div>
+
+                <div class="field-grid">
+                    <label class="field">
+                        <span>Filas</span>
+
+                        <input
+                            id="rows-input"
+                            type="number"
+                            min="5"
+                            max="40"
+                            value="10"
+                        >
+                    </label>
+
+                    <label class="field">
+                        <span>Columnas</span>
+
+                        <input
+                            id="columns-input"
+                            type="number"
+                            min="5"
+                            max="40"
+                            value="10"
+                        >
+                    </label>
+                </div>
+
+                <button
+                    id="apply-size-button"
+                    class="button button--secondary requires-idle"
+                    type="button"
+                >
+                    Crear tablero
+                </button>
+            </section>
+
+            <section class="control-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Edición</p>
+                    <h2>Herramientas</h2>
+                </div>
+
+                <div class="tool-grid" role="group">
+                    <button
+                        class="tool-button tool-button--active"
+                        type="button"
+                        data-tool="obstacle"
+                        aria-pressed="true"
+                    >
+                        <span class="tool-button__symbol">■</span>
+                        Obstáculo
+                    </button>
+
+                    <button
+                        class="tool-button"
+                        type="button"
+                        data-tool="start"
+                        aria-pressed="false"
+                    >
+                        <span class="tool-button__symbol">S</span>
+                        Inicio
+                    </button>
+
+                    <button
+                        class="tool-button"
+                        type="button"
+                        data-tool="goal"
+                        aria-pressed="false"
+                    >
+                        <span class="tool-button__symbol">G</span>
+                        Destino
+                    </button>
+
+                    <button
+                        class="tool-button"
+                        type="button"
+                        data-tool="erase"
+                        aria-pressed="false"
+                    >
+                        <span class="tool-button__symbol">×</span>
+                        Borrar
+                    </button>
+                </div>
+
+                <div class="button-row">
+                    <button
+                        id="clear-route-button"
+                        class="button button--quiet"
+                        type="button"
+                    >
+                        Limpiar resultado
+                    </button>
+
+                    <button
+                        id="clear-maze-button"
+                        class="button button--quiet"
+                        type="button"
+                    >
+                        Vaciar laberinto
+                    </button>
+                </div>
+            </section>
+
+            <section class="control-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Automático</p>
+                    <h2>Generación</h2>
+                </div>
+
+                <div class="field-grid">
+                    <label class="field">
+                        <span>Obstáculos (%)</span>
+
+                        <input
+                            id="density-input"
+                            type="number"
+                            min="5"
+                            max="45"
+                            value="25"
+                        >
+                    </label>
+
+                    <label class="field">
+                        <span>Semilla</span>
+
+                        <input
+                            id="seed-input"
+                            type="number"
+                            placeholder="Opcional"
+                        >
+                    </label>
+                </div>
+
+                <button
+                    id="generate-maze-button"
+                    class="button button--secondary requires-idle"
+                    type="button"
+                >
+                    Generar automáticamente
+                </button>
+            </section>
+
+            <section class="control-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Persistencia local</p>
+                    <h2>Archivos</h2>
+                </div>
+
+                <div class="button-row">
+                    <button
+                        id="save-maze-button"
+                        class="button button--quiet requires-idle"
+                        type="button"
+                    >
+                        Guardar laberinto
+                    </button>
+
+                    <button
+                        id="load-maze-file-button"
+                        class="button button--quiet requires-idle"
+                        type="button"
+                    >
+                        Importar laberinto
+                    </button>
+                </div>
+
+                <input
+                    id="maze-file-input"
+                    class="visually-hidden"
+                    type="file"
+                    accept=".json,application/json"
+                >
+
+                <p class="field-help">
+                    Los archivos se procesan localmente y no utilizan
+                    una base de datos.
+                </p>
+            </section>
+
+            <section class="control-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Visualización</p>
+                    <h2>Animación</h2>
+                </div>
+
+                <label class="field">
+                    <span>Velocidad</span>
+
+                    <select id="animation-speed">
+                        <option value="0">Instantánea</option>
+                        <option value="6">Rápida</option>
+                        <option value="20" selected>Normal</option>
+                        <option value="55">Lenta</option>
+                    </select>
+                </label>
+            </section>
+        </aside>
+
+        <section class="maze-section">
+            <div class="maze-heading">
+                <div>
+                    <p class="panel-kicker">Área de trabajo</p>
+                    <h2>Laberinto interactivo</h2>
+                </div>
+
+                <span id="maze-size" class="maze-size">10 × 10</span>
+            </div>
+
+            <div
+                id="workspace-status"
+                class="workspace-status"
+                role="status"
+                aria-live="polite"
+            >
+                Seleccione una herramienta y edite el tablero.
+            </div>
+
+            <div class="maze-canvas">
+                <div
+                    id="maze-grid"
+                    class="maze-grid"
+                    role="grid"
+                    aria-label="Cuadrícula del laberinto"
+                ></div>
+            </div>
+
+            <div class="legend" aria-label="Leyenda">
+                <span>
+                    <i class="legend__color legend__color--free"></i>
+                    Libre
+                </span>
+
+                <span>
+                    <i class="legend__color legend__color--obstacle"></i>
+                    Obstáculo
+                </span>
+
+                <span>
+                    <i class="legend__color legend__color--start"></i>
+                    Inicio
+                </span>
+
+                <span>
+                    <i class="legend__color legend__color--goal"></i>
+                    Destino
+                </span>
+
+                <span>
+                    <i class="legend__color legend__color--explored"></i>
+                    Explorado
+                </span>
+
+                <span>
+                    <i class="legend__color legend__color--path"></i>
+                    Ruta
+                </span>
+            </div>
+
+            <div class="algorithm-actions">
+                <button
+                    class="button button--algorithm requires-idle"
+                    type="button"
+                    data-algorithm="bfs"
+                >
+                    Ejecutar BFS
+                </button>
+
+                <button
+                    class="button button--algorithm requires-idle"
+                    type="button"
+                    data-algorithm="dfs"
+                >
+                    Ejecutar DFS
+                </button>
+
+                <button
+                    class="button button--algorithm requires-idle"
+                    type="button"
+                    data-algorithm="astar"
+                >
+                    Ejecutar A*
+                </button>
+
+                <button
+                    id="compare-button"
+                    class="button button--primary requires-idle"
+                    type="button"
+                >
+                    Comparar algoritmos
+                </button>
+            </div>
+        </section>
+
+        <aside class="panel results-panel">
+            <section class="result-section">
+                <div class="section-heading">
+                    <p class="panel-kicker">Ejecución</p>
+                    <h2>Resultados</h2>
+                </div>
+
+                <div class="metric-grid">
+                    <article class="metric-card">
+                        <span>Algoritmo</span>
+                        <strong id="metric-algorithm">—</strong>
+                    </article>
+
+                    <article class="metric-card">
+                        <span>Estado</span>
+                        <strong id="metric-status">—</strong>
+                    </article>
+
+                    <article class="metric-card">
+                        <span>Longitud</span>
+                        <strong id="metric-length">—</strong>
+                    </article>
+
+                    <article class="metric-card">
+                        <span>Explorados</span>
+                        <strong id="metric-explored">—</strong>
+                    </article>
+
+                    <article class="metric-card metric-card--wide">
+                        <span>Tiempo de ejecución</span>
+                        <strong id="metric-time">—</strong>
+                    </article>
+                </div>
+
+                <p id="result-message" class="result-message">
+                    Ejecute un algoritmo para obtener resultados.
+                </p>
+
+                <div class="result-actions">
+                    <button
+                        id="export-csv-button"
+                        class="button button--secondary"
+                        type="button"
+                        disabled
+                    >
+                        Descargar CSV
+                    </button>
+
+                    <button
+                        id="export-pdf-button"
+                        class="button button--secondary"
+                        type="button"
+                        disabled
+                    >
+                        Exportar PDF
+                    </button>
+                </div>
+            </section>
+
+            <section
+                id="comparison-section"
+                class="result-section"
+                hidden
+            >
+                <div class="section-heading">
+                    <p class="panel-kicker">Análisis</p>
+                    <h2>Comparación</h2>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="comparison-table">
+                        <thead>
+                            <tr>
+                                <th>Algoritmo</th>
+                                <th>Ruta</th>
+                                <th>Nodos</th>
+                                <th>Tiempo</th>
+                            </tr>
+                        </thead>
+
+                        <tbody id="comparison-body"></tbody>
+                    </table>
+                </div>
+
+                <div class="chart-block">
+                    <h3>Nodos explorados</h3>
+                    <div id="nodes-chart" class="bar-chart"></div>
+                </div>
+
+                <div class="chart-block">
+                    <h3>Tiempo de ejecución</h3>
+                    <div id="time-chart" class="bar-chart"></div>
+                </div>
+            </section>
+
+            <section class="result-section">
+                <details class="route-details">
+                    <summary>Ruta completa</summary>
+
+                    <div
+                        id="route-list"
+                        class="route-list"
+                    >
+                        No existe una ruta calculada.
+                    </div>
+                </details>
+            </section>
+        </aside>
+    </main>
+
+    <script
+        type="module"
+        src="/static/js/app.js"
+    ></script>
+</body>
+</html>
