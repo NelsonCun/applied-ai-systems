@@ -1088,7 +1088,7 @@ http://127.0.0.1:8002
 
 ---
 
-## 33. Conclusiones (1 por cada objetivo específico)
+## 33. Conclusiones
 * RoboMaze es una herramienta educativa valiosa que combina teoría y práctica, permitiendo a los estudiantes y entusiastas de la inteligencia artificial explorar conceptos fundamentales de algoritmos de búsqueda de manera interactiva y visual, fomentando un aprendizaje más profundo y significativo.
 * La implementación de algoritmos como BFS, DFS y A* permite a los usuarios observar las diferencias en la exploración y la eficiencia de cada algoritmo, destacando sus fortalezas y debilidades en distintos escenarios.
 * La capacidad de generar laberintos automáticamente y guardar/importar configuraciones en formato JSON ofrece flexibilidad y conveniencia para los usuarios, permitiéndoles experimentar con diferentes configuraciones y escenarios.
