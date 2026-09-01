@@ -1,9 +1,5 @@
 # Manual técnico — Doctor Byte
 
-**Proyecto:** Doctor Byte, Fase 1  
-**Curso:** Inteligencia Artificial 1  
-**Estudiante:** Nelson Emanuel Cún Bálan  
-**Carné:** 201222010
 
 ## 1. Introducción
 

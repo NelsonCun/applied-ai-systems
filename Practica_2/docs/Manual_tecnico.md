@@ -4,17 +4,7 @@
 
 **SmartBot Hospital** es un sistema de atención automatizada desarrollado para el Hospital Vida Central. Permite responder consultas administrativas mediante Telegram y administrar el conocimiento desde una aplicación web.
 
-El sistema fue desarrollado como parte de la Práctica 2 del curso Inteligencia Artificial 1.
 
-### Información académica
-
-* **Estudiante:** Nelson Emanuel Cún Bálan
-* **Carné:** 201222010
-* **Curso:** Inteligencia Artificial 1
-* **Universidad:** Universidad de San Carlos de Guatemala
-* **Facultad:** Facultad de Ingeniería
-
----
 
 ## 2. Objetivo del sistema
 

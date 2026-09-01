@@ -6,12 +6,11 @@ Este documento describe la infraestructura, configuración y secuencia empleadas
 
 ## 2. Estado del despliegue
 
+> **Historical deployment note:** this guide documents an AWS EC2 deployment that was successfully validated during the project lifecycle. The original public IP is intentionally omitted because the instance is not presented as a currently maintained portfolio endpoint.
+
 La solución fue desplegada y validada en una instancia AWS EC2 con Ubuntu Server 24.04 LTS.
 
 ```text
-Frontend: http://44.210.237.133
-API: http://44.210.237.133/api/v1
-Swagger: http://44.210.237.133/docs
 ```
 
 La dirección corresponde a la IPv4 pública utilizada durante la validación final. Una asignación diferente de IP requiere actualizar `CORS_ORIGINS` y las referencias documentales del entorno.
