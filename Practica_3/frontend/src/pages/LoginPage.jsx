@@ -169,13 +169,13 @@ export default function LoginPage() {
               <div className="invoice-preview-row">
                 <span>Proveedor</span>
                 <strong>
-                  Tecnología Maya, S.A.
+                  Demo Ficticio Tecnologia Alfa
                 </strong>
               </div>
 
               <div className="invoice-preview-row">
                 <span>NIT</span>
-                <strong>1234567-8</strong>
+                <strong>9000001-9</strong>
               </div>
 
               <div className="invoice-preview-row">

@@ -12,8 +12,8 @@ from reportlab.pdfgen import canvas
 INVOICES = [
     {
         "file": "factura_tecnologia.pdf",
-        "provider": "Tecnologia Maya, S.A.",
-        "nit": "1234567-8",
+        "provider": "Demo Ficticio Tecnologia Alfa",
+        "nit": "9000001-9",
         "number": "FAC-2026-001",
         "date": "17/06/2026",
         "subtotal": "1000.00",
@@ -23,8 +23,8 @@ INVOICES = [
     },
     {
         "file": "factura_quetzal.png",
-        "provider": "Distribuidora Quetzal, S.A.",
-        "nit": "7654321-0",
+        "provider": "Demo Ficticio Oficina Beta",
+        "nit": "9000002-9",
         "number": "FAC-2026-002",
         "date": "16/06/2026",
         "subtotal": "500.00",
@@ -34,8 +34,8 @@ INVOICES = [
     },
     {
         "file": "factura_servicios_ruido.jpg",
-        "provider": "Servicios Chapines",
-        "nit": "9876543-K",
+        "provider": "Demo Ficticio Servicios Gamma",
+        "nit": "9000003-9",
         "number": "FAC-2026-003",
         "date": "15/06/2026",
         "subtotal": "750.00",

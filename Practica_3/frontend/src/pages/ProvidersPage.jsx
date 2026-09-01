@@ -679,7 +679,7 @@ export default function ProvidersPage() {
                 required
                 maxLength={30}
                 value={form.nit}
-                placeholder="1234567-8"
+                placeholder="9000001-9"
                 onChange={(event) =>
                   updateForm(
                     "nit",
