@@ -293,9 +293,17 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
-          node-version: "24"
+          node-version: "24.19.0"
           cache: npm
           cache-dependency-path: ${{ matrix.lockfile }}
+
+      - name: Pin npm version
+        run: npm install --global npm@11.17.0
+
+      - name: Verify toolchain
+        run: |
+          node --version
+          npm --version
 
       - name: Install dependencies
         working-directory: ${{ matrix.directory }}
