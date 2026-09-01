@@ -1,16 +1,52 @@
-# React + Vite
+# Doctor Byte Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/Vite interface for the Doctor Byte expert system.
 
-Currently, two official plugins are available:
+## Responsibilities
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+The frontend allows users to:
 
-## React Compiler
+- load available symptoms;
+- request diagnoses;
+- review recommendations;
+- inspect diagnostic history;
+- administer the knowledge base;
+- configure supported operational settings.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+The frontend contains no Prolog inference logic and does not expose the Telegram bot token. All operations are delegated to the FastAPI backend.
 
-## Expanding the ESLint configuration
+## Stack
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- React
+- Vite
+- Axios
+
+## Development
+
+Install dependencies:
+
+```bash
+npm ci
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+The backend URL is configured through:
+
+```text
+VITE_API_URL
+```
+
+See `.env.example` for the local configuration template.
+
+## Production Build
+
+```bash
+npm run build
+```
+
+For system architecture, Prolog inference, Telegram integration, and backend configuration, see the [Doctor Byte README](../README.md).

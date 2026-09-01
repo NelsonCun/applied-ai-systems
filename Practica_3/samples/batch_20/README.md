@@ -30,6 +30,8 @@ docker compose run \
 ```
 
 ## Carga y validación
+
+> Los comandos siguientes utilizan la cuenta seed local incluida para reproducibilidad. No corresponde a una credencial de producción.
 ```bash
 python3 scripts/upload_verify_batch_20.py \
   --directory samples/batch_20 \

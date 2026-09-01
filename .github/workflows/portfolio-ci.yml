@@ -1,0 +1,413 @@
+name: Portfolio CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: portfolio-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository-safety:
+    name: Repository safety
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Reject tracked runtime secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if git ls-files | grep -Eq '(^|/)\.env$'; then
+            echo "Tracked runtime .env files are not allowed."
+            git ls-files | grep -E '(^|/)\.env$'
+            exit 1
+          fi
+
+      - name: Reject tracked generated artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          pattern='(^|/)(node_modules|dist|\.vite|\.venv|venv|__pycache__)(/|$)|\.(pyc|pyo)$'
+
+          if git ls-files | grep -Eq "$pattern"; then
+            echo "Generated artifacts are tracked:"
+            git ls-files | grep -E "$pattern"
+            exit 1
+          fi
+
+      - name: Validate environment templates
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          files = [
+              "Practica_2/.env.example",
+              "Practica_3/.env.example",
+              "Practica_3/.env.production.example",
+              "Proyecto_fase1/backend/.env.example",
+              "Proyecto_fase1/frontend/.env.example",
+          ]
+
+          sensitive = {
+              "POSTGRES_PASSWORD",
+              "JWT_SECRET_KEY",
+              "SECRET_KEY",
+              "SMTP_PASSWORD",
+              "TELEGRAM_BOT_TOKEN",
+              "RPA_PASSWORD",
+          }
+
+          unsafe = []
+
+          for rel in files:
+              path = Path(rel)
+
+              if not path.exists():
+                  raise SystemExit(f"Missing environment template: {rel}")
+
+              for number, raw in enumerate(
+                  path.read_text(
+                      encoding="utf-8",
+                      errors="strict",
+                  ).splitlines(),
+                  1,
+              ):
+                  stripped = raw.strip()
+
+                  if (
+                      not stripped
+                      or stripped.startswith("#")
+                      or "=" not in raw
+                  ):
+                      continue
+
+                  key, value = raw.split("=", 1)
+                  key = key.strip()
+                  value = value.strip()
+
+                  if key not in sensitive or not value:
+                      continue
+
+                  if not re.search(
+                      r"(change-me|replace-with|REPLACE_WITH)",
+                      value,
+                      re.I,
+                  ):
+                      unsafe.append((rel, number, key))
+
+          if unsafe:
+              for rel, number, key in unsafe:
+                  print(f"{rel}:{number}: unsafe literal in {key}")
+              raise SystemExit(1)
+
+          print("Environment templates are safe.")
+          PY
+
+      - name: Validate README local links
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          from urllib.parse import unquote
+
+          root = Path.cwd()
+
+          readmes = sorted(
+              p
+              for p in root.rglob("*")
+              if p.is_file()
+              and p.name.lower() == "readme.md"
+              and ".git" not in p.parts
+              and "node_modules" not in p.parts
+          )
+
+          pattern = re.compile(r'!?\[[^\]]*\]\(([^)]+)\)')
+          missing = []
+
+          for readme in readmes:
+              text = readme.read_text(
+                  encoding="utf-8",
+                  errors="replace",
+              )
+
+              for raw in pattern.findall(text):
+                  link = raw.strip()
+
+                  if " " in link and not link.startswith("<"):
+                      link = link.split(" ", 1)[0]
+
+                  link = link.strip("<>")
+
+                  if (
+                      link.startswith("http://")
+                      or link.startswith("https://")
+                      or link.startswith("mailto:")
+                      or link.startswith("#")
+                      or link.startswith("data:")
+                  ):
+                      continue
+
+                  target = link.split("#", 1)[0]
+
+                  if not target:
+                      continue
+
+                  resolved = (
+                      readme.parent / unquote(target)
+                  ).resolve()
+
+                  if not resolved.exists():
+                      missing.append(
+                          f"{readme.relative_to(root)} -> {target}"
+                      )
+
+          if missing:
+              print("Broken local README links:")
+              for item in missing:
+                  print(item)
+              raise SystemExit(1)
+
+          print("README local links are valid.")
+          PY
+
+      - name: Validate Python syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          python3 - <<'PY'
+          import tokenize
+          from pathlib import Path
+
+          roots = [
+              Path("Practica_1/backend"),
+              Path("Practica_2/backend"),
+              Path("Practica_2/telegram-bot"),
+              Path("Practica_3/backend"),
+              Path("Practica_3/rpa-target"),
+              Path("Practica_3/scripts"),
+              Path("Practica_4/app"),
+              Path("Practica_4/tests"),
+              Path("Proyecto_fase1/backend"),
+          ]
+
+          count = 0
+
+          for root in roots:
+              if not root.exists():
+                  continue
+
+              for path in sorted(root.rglob("*.py")):
+                  if any(
+                      part in {
+                          ".venv",
+                          "venv",
+                          "__pycache__",
+                      }
+                      for part in path.parts
+                  ):
+                      continue
+
+                  with tokenize.open(path) as handle:
+                      source = handle.read()
+
+                  compile(
+                      source,
+                      str(path),
+                      "exec",
+                  )
+                  count += 1
+
+          print(f"Compiled {count} Python files successfully.")
+          PY
+
+  robomaze-tests:
+    name: RoboMaze tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: Practica_4/requirements.txt
+
+      - name: Install dependencies
+        working-directory: Practica_4
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Run tests
+        working-directory: Practica_4
+        run: python -m pytest -q
+
+  frontend-builds:
+    name: Frontend build — ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: SmartBot
+            directory: Practica_2/frontend
+            lockfile: Practica_2/frontend/package-lock.json
+          - name: SmartInvoice
+            directory: Practica_3/frontend
+            lockfile: Practica_3/frontend/package-lock.json
+          - name: Doctor Byte
+            directory: Proyecto_fase1/frontend
+            lockfile: Proyecto_fase1/frontend/package-lock.json
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24.19.0"
+          cache: npm
+          cache-dependency-path: ${{ matrix.lockfile }}
+
+      - name: Pin npm version
+        run: npm install --global npm@11.17.0
+
+      - name: Verify toolchain
+        run: |
+          node --version
+          npm --version
+
+      - name: Install dependencies
+        working-directory: ${{ matrix.directory }}
+        run: npm ci --no-audit --no-fund
+
+      - name: Build
+        working-directory: ${{ matrix.directory }}
+        run: npm run build
+
+  prolog-load:
+    name: Prolog load validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Install SWI-Prolog
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y swi-prolog-nox
+
+      - name: Load route knowledge base
+        run: swipl -q -t halt -s Practica_1/prolog/rutas.pl
+
+      - name: Load Doctor Byte knowledge base
+        run: swipl -q -t halt -s Proyecto_fase1/prolog/conocimiento.pl
+
+      - name: Load Doctor Byte inference engine
+        run: swipl -q -t halt -s Proyecto_fase1/prolog/doctor_byte.pl
+
+  compose-config:
+    name: Docker Compose config
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Validate Compose manifests
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          validate_compose() {
+            local dir="$1"
+
+            (
+              cd "$dir"
+
+              if [[ -e .env ]]; then
+                echo "Unexpected pre-existing .env in $dir"
+                exit 1
+              fi
+
+              cp .env.example .env
+              chmod 600 .env
+              trap 'rm -f .env' EXIT
+
+              docker compose \
+                --env-file .env \
+                config -q
+            )
+          }
+
+          validate_compose Practica_2
+          validate_compose Practica_3
+
+          if find Practica_2 Practica_3 \
+              -maxdepth 1 \
+              -type f \
+              -name '.env' \
+              -print \
+              | grep -q .; then
+            echo "Temporary .env cleanup failed."
+            exit 1
+          fi
+
+  gitleaks:
+    name: Gitleaks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Scan Git history
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          docker run --rm \
+            -e GIT_CONFIG_COUNT=1 \
+            -e GIT_CONFIG_KEY_0=safe.directory \
+            -e GIT_CONFIG_VALUE_0=/repo \
+            -v "$GITHUB_WORKSPACE:/repo:ro" \
+            ghcr.io/gitleaks/gitleaks:v8.30.1@sha256:b109bc5f8f76a38196a3e413704fc5b9e3c32360bce4e4b603bd6f45b3721dbb \
+            git \
+            --redact=100 \
+            --no-banner \
+            --log-opts='--all' \
+            /repo

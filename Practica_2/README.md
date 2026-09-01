@@ -1,14 +1,7 @@
 # SmartBot Hospital
 
-Sistema de atención automatizada para el **Hospital Vida Central**, desarrollado como parte de la Práctica 2 del curso Inteligencia Artificial 1.
+Plataforma de atención automatizada para el **Hospital Vida Central**, con panel administrativo, API REST, persistencia en PostgreSQL y un bot de Telegram.
 
-## Información académica
-
-* **Estudiante:** Nelson Emanuel Cún Bálan
-* **Carné:** 201222010
-* **Curso:** Inteligencia Artificial 1
-* **Universidad:** Universidad de San Carlos de Guatemala
-* **Facultad:** Facultad de Ingeniería
 
 ## Descripción
 
@@ -196,14 +189,14 @@ Los contenedores esperados son:
 | ReDoc                | http://localhost:8000/redoc         |
 | Health check         | http://localhost:8000/api/v1/health |
 
-## Credenciales administrativas
+## Cuenta de desarrollo local
 
 ```text
 Usuario: IA1-User
 Contraseña: IA1-password@_new
 ```
 
-Estas credenciales permiten ingresar al panel administrativo.
+Estas credenciales pertenecen exclusivamente al seed de desarrollo local. No deben reutilizarse en un entorno expuesto a Internet.
 
 ## Configuración de Telegram
 

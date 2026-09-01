@@ -2,12 +2,6 @@
 
 Sistema inteligente para el procesamiento administrativo de facturas digitales mediante **Computer Vision**, **OCR** y **RPA**.
 
-| Información | Valor |
-|---|---|
-| Curso | Inteligencia Artificial 1 |
-| Práctica | Práctica 3 |
-| Estudiante | Nelson Emanuel Cún Bálan |
-| Carné | 201222010 |
 
 ## Descripción
 
@@ -119,14 +113,14 @@ curl -s http://localhost:8001/api/v1/health | python3 -m json.tool
 | MailHog (desarrollo) | http://localhost:8025 |
 | Sistema RPA simulado | http://localhost:8082 |
 
-Credenciales de desarrollo utilizadas durante la validación:
+Cuenta seed utilizada para desarrollo local:
 
 ```text
 Usuario: admin
 Contraseña: Admin123*
 ```
 
-Estas credenciales corresponden al entorno académico de validación. Para un despliegue permanente se contempla su sustitución por credenciales administradas de forma segura.
+Esta cuenta se crea únicamente para reproducir el entorno local de demostración. Debe reemplazarse por credenciales propias antes de exponer el sistema fuera de un entorno de desarrollo.
 
 ## Correo en producción
 
@@ -228,22 +222,20 @@ docker compose run \
 
 ### Anexos técnicos
 
-- [API REST](docs/API_REST.md)
+- [API REST](docs/Manual_tecnico.md)
 - [Guía de despliegue](docs/Guia_despliegue.md)
 - [Configuración SMTP](docs/Configuracion_SMTP.md)
-- [Guía de demostración](docs/Guia_demostracion.md)
-- [Matriz de verificación](docs/Checklist_entrega.md)
+- [Guía de demostración](samples/batch_20/README.md)
 - [Resumen de requerimientos](docs/Requerimientos.md)
 - [Resumen de arquitectura](docs/Arquitectura.md)
 
-## Despliegue público
+## Deployment Validation
+
+The production-oriented deployment was validated on an AWS EC2 instance during the original project lifecycle. The historical public endpoint is intentionally not published here because it is not maintained as a live portfolio service.
 
 La solución fue desplegada y validada en una instancia EC2:
 
 ```text
-Frontend público: http://44.210.237.133
-API pública: http://44.210.237.133/api/v1
-Swagger: http://44.210.237.133/docs
 ```
 
 La dirección corresponde a la IPv4 pública utilizada durante la validación final. Una nueva asignación de IP requeriría actualizar la configuración CORS y las referencias del entorno.

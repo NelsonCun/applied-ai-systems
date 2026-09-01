@@ -5,7 +5,6 @@
 ### Entorno público
 
 ```text
-http://44.210.237.133
 ```
 
 ### Entorno local
@@ -14,7 +13,7 @@ http://44.210.237.133
 http://localhost:5174
 ```
 
-Credenciales utilizadas durante la validación académica:
+Cuenta seed disponible para desarrollo local:
 
 ```text
 Usuario: admin
