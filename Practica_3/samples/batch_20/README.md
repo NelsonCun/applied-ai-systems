@@ -3,6 +3,8 @@
 Este directorio contiene un lote sintético utilizado para validar el
 procesamiento masivo de SmartInvoice.
 
+> **Datos de demostración:** todos los nombres de proveedores e identificadores tributarios de este lote son ficticios. Los NIT de prueba conservan un formato aceptado por SmartInvoice, pero utilizan deliberadamente un dígito verificador inválido bajo el algoritmo legado módulo 11 para evitar representar a un contribuyente real.
+
 ## Contenido
 
 - 20 facturas únicas.

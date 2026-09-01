@@ -24,7 +24,7 @@ INSERT INTO users (
 SELECT
     'Administrador SmartInvoice',
     'admin',
-    'admin@smartinvoice.com',
+    'admin@example.com',
     crypt('Admin123*', gen_salt('bf', 12)),
     'ADMIN',
     TRUE
@@ -32,7 +32,7 @@ WHERE NOT EXISTS (
     SELECT 1
     FROM users
     WHERE username = 'admin'
-       OR email = 'admin@smartinvoice.com'
+       OR email = 'admin@example.com'
 );
 
 INSERT INTO providers (
@@ -45,11 +45,11 @@ INSERT INTO providers (
     created_by
 )
 SELECT
-    'Tecnología Maya, S.A.',
-    '1234567-8',
-    'ventas@tecnologiamaya.com',
-    '2222-1001',
-    'Ciudad de Guatemala',
+    'Demo Ficticio Tecnologia Alfa',
+    '9000001-9',
+    'proveedor.alfa@example.com',
+    '0000-0001',
+    'Ubicacion ficticia Alfa',
     category.id,
     admin_user.id
 FROM invoice_categories category
@@ -59,7 +59,7 @@ WHERE category.name = 'Tecnología'
   AND NOT EXISTS (
       SELECT 1
       FROM providers
-      WHERE nit = '1234567-8'
+      WHERE nit = '9000001-9'
   );
 
 INSERT INTO providers (
@@ -72,11 +72,11 @@ INSERT INTO providers (
     created_by
 )
 SELECT
-    'Distribuidora Quetzal, S.A.',
-    '7654321-0',
-    'facturacion@quetzal.com',
-    '2222-1002',
-    'Mixco, Guatemala',
+    'Demo Ficticio Oficina Beta',
+    '9000002-9',
+    'proveedor.beta@example.com',
+    '0000-0002',
+    'Ubicacion ficticia Beta',
     category.id,
     admin_user.id
 FROM invoice_categories category
@@ -86,7 +86,7 @@ WHERE category.name = 'Oficina'
   AND NOT EXISTS (
       SELECT 1
       FROM providers
-      WHERE nit = '7654321-0'
+      WHERE nit = '9000002-9'
   );
 
 INSERT INTO providers (
@@ -99,11 +99,11 @@ INSERT INTO providers (
     created_by
 )
 SELECT
-    'Servicios Chapines',
-    '9876543-K',
-    'contacto@servicioschapines.com',
-    '2222-1003',
-    'Antigua Guatemala',
+    'Demo Ficticio Servicios Gamma',
+    '9000003-9',
+    'proveedor.gamma@example.com',
+    '0000-0003',
+    'Ubicacion ficticia Gamma',
     category.id,
     admin_user.id
 FROM invoice_categories category
@@ -113,7 +113,7 @@ WHERE category.name = 'Servicios'
   AND NOT EXISTS (
       SELECT 1
       FROM providers
-      WHERE nit = '9876543-K'
+      WHERE nit = '9000003-9'
   );
 
 INSERT INTO scheduled_tasks (

@@ -39,40 +39,40 @@ from reportlab.pdfgen import canvas
 
 PROVIDERS = [
     {
-        "name": "Tecnología Maya, S.A.",
-        "nit": "1234567-8",
+        "name": "Demo Ficticio Tecnologia Alfa",
+        "nit": "9000001-9",
         "description": (
             "Computadoras, periféricos y accesorios tecnológicos"
         ),
         "category": "Tecnología",
     },
     {
-        "name": "Distribuidora Quetzal, S.A.",
-        "nit": "7654321-0",
+        "name": "Demo Ficticio Oficina Beta",
+        "nit": "9000002-9",
         "description": (
             "Papelería, mobiliario y suministros de oficina"
         ),
         "category": "Oficina",
     },
     {
-        "name": "Servicios Chapines",
-        "nit": "9876543-K",
+        "name": "Demo Ficticio Servicios Gamma",
+        "nit": "9000003-9",
         "description": (
             "Servicios profesionales de soporte y mantenimiento"
         ),
         "category": "Servicios",
     },
     {
-        "name": "Comercial Smart Guatemala",
-        "nit": "123456789",
+        "name": "Demo Ficticio Comercial Delta",
+        "nit": "9000004-9",
         "description": (
             "Alimentos y suministros para reunión empresarial"
         ),
         "category": "Alimentos",
     },
     {
-        "name": "Proveedora Central Guatemala (editada)",
-        "nit": "4567891-2",
+        "name": "Demo Ficticio Suministros Epsilon",
+        "nit": "9000005-9",
         "description": (
             "Servicio de transporte, logística y mensajería"
         ),
@@ -444,7 +444,7 @@ def write_manifest(
                 "profile",
                 "expected_category",
             ],
-        )
+            lineterminator="\n")
 
         writer.writeheader()
 

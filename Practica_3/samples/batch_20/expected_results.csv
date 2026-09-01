@@ -1,21 +1,21 @@
 file,provider,nit,number,date,subtotal,tax,total,format,profile,expected_category
-l20a_01_tecnologia.pdf,"Tecnología Maya, S.A.",1234567-8,L20A-2026-001,01/05/2026,185.00,22.20,207.20,pdf,clean,Tecnología
-l20a_02_oficina.png,"Distribuidora Quetzal, S.A.",7654321-0,L20A-2026-002,02/05/2026,277.75,33.33,311.08,png,clean,Oficina
-l20a_03_servicios.jpg,Servicios Chapines,9876543-K,L20A-2026-003,03/05/2026,370.50,44.46,414.96,jpg,mild_noise,Servicios
-l20a_04_alimentos.pdf,Comercial Smart Guatemala,123456789,L20A-2026-004,04/05/2026,463.25,55.59,518.84,pdf,clean,Alimentos
-l20a_05_transporte.png,Proveedora Central Guatemala (editada),4567891-2,L20A-2026-005,05/05/2026,478.00,57.36,535.36,png,low_contrast,Transporte
-l20a_06_tecnologia.jpg,"Tecnología Maya, S.A.",1234567-8,L20A-2026-006,06/05/2026,570.75,68.49,639.24,jpg,slight_rotation,Tecnología
-l20a_07_oficina.pdf,"Distribuidora Quetzal, S.A.",7654321-0,L20A-2026-007,07/05/2026,663.50,79.62,743.12,pdf,clean,Oficina
-l20a_08_servicios.png,Servicios Chapines,9876543-K,L20A-2026-008,08/05/2026,756.25,90.75,847.00,png,mild_noise,Servicios
-l20a_09_alimentos.jpg,Comercial Smart Guatemala,123456789,L20A-2026-009,09/05/2026,771.00,92.52,863.52,jpg,low_contrast,Alimentos
-l20a_10_transporte.pdf,Proveedora Central Guatemala (editada),4567891-2,L20A-2026-010,10/05/2026,863.75,103.65,967.40,pdf,clean,Transporte
-l20a_11_tecnologia.png,"Tecnología Maya, S.A.",1234567-8,L20A-2026-011,11/05/2026,956.50,114.78,1071.28,png,slight_rotation,Tecnología
-l20a_12_oficina.jpg,"Distribuidora Quetzal, S.A.",7654321-0,L20A-2026-012,12/05/2026,1049.25,125.91,1175.16,jpg,mild_noise,Oficina
-l20a_13_servicios.pdf,Servicios Chapines,9876543-K,L20A-2026-013,13/05/2026,1064.00,127.68,1191.68,pdf,clean,Servicios
-l20a_14_alimentos.png,Comercial Smart Guatemala,123456789,L20A-2026-014,14/05/2026,1156.75,138.81,1295.56,png,low_contrast,Alimentos
-l20a_15_transporte.jpg,Proveedora Central Guatemala (editada),4567891-2,L20A-2026-015,15/05/2026,1249.50,149.94,1399.44,jpg,slight_rotation,Transporte
-l20a_16_tecnologia.pdf,"Tecnología Maya, S.A.",1234567-8,L20A-2026-016,16/05/2026,1342.25,161.07,1503.32,pdf,clean,Tecnología
-l20a_17_oficina.png,"Distribuidora Quetzal, S.A.",7654321-0,L20A-2026-017,17/05/2026,1357.00,162.84,1519.84,png,mild_noise,Oficina
-l20a_18_servicios.jpg,Servicios Chapines,9876543-K,L20A-2026-018,18/05/2026,1449.75,173.97,1623.72,jpg,low_contrast,Servicios
-l20a_19_alimentos.pdf,Comercial Smart Guatemala,123456789,L20A-2026-019,19/05/2026,1542.50,185.10,1727.60,pdf,clean,Alimentos
-l20a_20_transporte.png,Proveedora Central Guatemala (editada),4567891-2,L20A-2026-020,20/05/2026,1635.25,196.23,1831.48,png,slight_rotation,Transporte
+l20a_01_tecnologia.pdf,Demo Ficticio Tecnologia Alfa,9000001-9,L20A-2026-001,01/05/2026,185.00,22.20,207.20,pdf,clean,Tecnología
+l20a_02_oficina.png,Demo Ficticio Oficina Beta,9000002-9,L20A-2026-002,02/05/2026,277.75,33.33,311.08,png,clean,Oficina
+l20a_03_servicios.jpg,Demo Ficticio Servicios Gamma,9000003-9,L20A-2026-003,03/05/2026,370.50,44.46,414.96,jpg,mild_noise,Servicios
+l20a_04_alimentos.pdf,Demo Ficticio Comercial Delta,9000004-9,L20A-2026-004,04/05/2026,463.25,55.59,518.84,pdf,clean,Alimentos
+l20a_05_transporte.png,Demo Ficticio Suministros Epsilon,9000005-9,L20A-2026-005,05/05/2026,478.00,57.36,535.36,png,low_contrast,Transporte
+l20a_06_tecnologia.jpg,Demo Ficticio Tecnologia Alfa,9000001-9,L20A-2026-006,06/05/2026,570.75,68.49,639.24,jpg,slight_rotation,Tecnología
+l20a_07_oficina.pdf,Demo Ficticio Oficina Beta,9000002-9,L20A-2026-007,07/05/2026,663.50,79.62,743.12,pdf,clean,Oficina
+l20a_08_servicios.png,Demo Ficticio Servicios Gamma,9000003-9,L20A-2026-008,08/05/2026,756.25,90.75,847.00,png,mild_noise,Servicios
+l20a_09_alimentos.jpg,Demo Ficticio Comercial Delta,9000004-9,L20A-2026-009,09/05/2026,771.00,92.52,863.52,jpg,low_contrast,Alimentos
+l20a_10_transporte.pdf,Demo Ficticio Suministros Epsilon,9000005-9,L20A-2026-010,10/05/2026,863.75,103.65,967.40,pdf,clean,Transporte
+l20a_11_tecnologia.png,Demo Ficticio Tecnologia Alfa,9000001-9,L20A-2026-011,11/05/2026,956.50,114.78,1071.28,png,slight_rotation,Tecnología
+l20a_12_oficina.jpg,Demo Ficticio Oficina Beta,9000002-9,L20A-2026-012,12/05/2026,1049.25,125.91,1175.16,jpg,mild_noise,Oficina
+l20a_13_servicios.pdf,Demo Ficticio Servicios Gamma,9000003-9,L20A-2026-013,13/05/2026,1064.00,127.68,1191.68,pdf,clean,Servicios
+l20a_14_alimentos.png,Demo Ficticio Comercial Delta,9000004-9,L20A-2026-014,14/05/2026,1156.75,138.81,1295.56,png,low_contrast,Alimentos
+l20a_15_transporte.jpg,Demo Ficticio Suministros Epsilon,9000005-9,L20A-2026-015,15/05/2026,1249.50,149.94,1399.44,jpg,slight_rotation,Transporte
+l20a_16_tecnologia.pdf,Demo Ficticio Tecnologia Alfa,9000001-9,L20A-2026-016,16/05/2026,1342.25,161.07,1503.32,pdf,clean,Tecnología
+l20a_17_oficina.png,Demo Ficticio Oficina Beta,9000002-9,L20A-2026-017,17/05/2026,1357.00,162.84,1519.84,png,mild_noise,Oficina
+l20a_18_servicios.jpg,Demo Ficticio Servicios Gamma,9000003-9,L20A-2026-018,18/05/2026,1449.75,173.97,1623.72,jpg,low_contrast,Servicios
+l20a_19_alimentos.pdf,Demo Ficticio Comercial Delta,9000004-9,L20A-2026-019,19/05/2026,1542.50,185.10,1727.60,pdf,clean,Alimentos
+l20a_20_transporte.png,Demo Ficticio Suministros Epsilon,9000005-9,L20A-2026-020,20/05/2026,1635.25,196.23,1831.48,png,slight_rotation,Transporte
